@@ -11,43 +11,42 @@ model Player {
   name      String   @unique
   apiToken  String   @unique
   createdAt DateTime @default(now())
-  
-  // Relation : Un joueur a plusieurs parties
-  games     Game[]
+
+  games Game[]
 }
 
 model Game {
-  id             String   @id
+  id String @id
 
-  // Relation avec le joueur de la team
-  playerId       String
-  player         Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  // Métadonnées de la partie
-  startedAt      DateTime
-  queueId        String?  // ex: "core-bo1"
-  wentFirst      Boolean? // true, false, ou null (si la partie a crash/abandonnée tôt)
+  startedAt DateTime
+  queueId   String?
+  wentFirst Boolean?
 
-  // Résultats et Stats
-  result         String   // "win" ou "loss"
-  endReason      String   // "lore", "concede", etc.
-  myLore         Int
-  oppLore        Int
-  mmrBefore      Int?
-  mmrAfter       Int?
-  mmrDelta       Int?
+  result    String
+  endReason String
+  myLore    Int
+  oppLore   Int
+  mmrBefore Int?
+  mmrAfter  Int?
+  mmrDelta  Int?
 
-  // Infos sur le joueur et l'adversaire
   myDeckColors   String?
-  yourDecklist   String?  // Stocké en string (JSON.stringify) pour faciliter la vie avec SQLite
+  yourDecklist   String?
   oppDisplayName String
   oppDeckColors  String?
-  replayUrl      String?  // Lien vers duels.ink
+  replayUrl      String?
 
-  createdAt      DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  // Index pour les tris et filtres
   @@index([queueId])
   @@index([startedAt(sort: Desc)])
   @@index([playerId])
+}
+
+model QueueConfig {
+  id       String  @id
+  isActive Boolean @default(true)
 }

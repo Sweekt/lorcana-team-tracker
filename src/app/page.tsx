@@ -1,89 +1,174 @@
 import prisma from "@/lib/prisma";
 import SyncButton from "@/components/SyncButton";
+import QueueSelector from "@/components/QueueSelector";
+import Link from "next/link";
 
-// Fonction pour récupérer et trier le classement
-async function getLeaderboard() {
+// 1. Récupère dynamiquement toutes les queues (actives uniquement)
+async function getAvailableQueues() {
+  const distinct = await prisma.game.findMany({
+    where: { queueId: { not: null } },
+    select: { queueId: true },
+    distinct: ["queueId"],
+  });
+
+  const configs = await prisma.queueConfig.findMany({ where: { isActive: false } });
+  const disabledQueues = new Set(configs.map(c => c.id));
+
+  return distinct
+      .map((g) => g.queueId as string)
+      .filter(queueId => !disabledQueues.has(queueId));
+}
+
+// 2. Récupère le classement filtré par queue
+async function getLeaderboard(queueId: string) {
   const players = await prisma.player.findMany({
     select: {
       name: true,
       _count: {
-        select: { games: true }, // Compte le nombre de parties totales
+        select: { games: { where: { queueId } } },
       },
       games: {
-        orderBy: { startedAt: "desc" }, // Trie du plus récent au plus ancien
-        take: 1, // Ne prend que la dernière partie
-        select: { mmrAfter: true }, // Récupère uniquement le MMR de cette partie
+        where: { queueId },
+        orderBy: { startedAt: "desc" },
+        take: 1,
+        select: { mmrAfter: true },
       },
     },
   });
 
-  // On formate les données pour l'affichage
-  const leaderboard = players.map((p) => {
-    // Si le joueur n'a pas de partie, on lui donne un MMR de base (par ex 1000, ou 0)
-    const currentMmr = p.games[0]?.mmrAfter ?? 1000;
+  const leaderboard = players
+      .filter((p) => p._count.games > 0)
+      .map((p) => {
+        const currentMmr = p.games[0]?.mmrAfter ?? 1000;
+        return {
+          name: p.name,
+          gamesPlayed: p._count.games,
+          mmr: currentMmr,
+        };
+      });
 
-    return {
-      name: p.name,
-      gamesPlayed: p._count.games,
-      mmr: currentMmr,
-    };
-  });
-
-  // On trie le tableau par MMR décroissant
   return leaderboard.sort((a, b) => b.mmr - a.mmr);
 }
 
-export default async function Home() {
-  const leaderboard = await getLeaderboard();
+// 3. Fonction pour styliser le Top 3
+const getRankBadge = (index: number) => {
+  switch (index) {
+    case 0: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 font-bold border border-yellow-200 shadow-sm">1</span>;
+    case 1: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-bold border border-slate-300 shadow-sm">2</span>;
+    case 2: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-amber-700 font-bold border border-orange-200 shadow-sm">3</span>;
+    default: return <span className="flex items-center justify-center w-8 h-8 text-slate-400 font-medium">{index + 1}</span>;
+  }
+};
+
+export default async function Home(props: { searchParams: Promise<{ queue?: string }> }) {
+  const searchParams = await props.searchParams;
+  const queues = await getAvailableQueues();
+
+  const currentQueue = searchParams.queue || (queues.includes("core-bo1") ? "core-bo1" : queues[0] || "");
+  const leaderboard = currentQueue ? await getLeaderboard(currentQueue) : [];
 
   return (
-      <main className="max-w-4xl mx-auto p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">🏆 Leaderboard Team</h1>
-          <SyncButton />
-        </div>
+      <div className="min-h-screen bg-slate-50/50 pb-20">
+        <main className="max-w-4xl mx-auto p-8 space-y-8">
 
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="py-4 px-6 font-semibold text-slate-600">Rang</th>
-              <th className="py-4 px-6 font-semibold text-slate-600">Joueur</th>
-              <th className="py-4 px-6 font-semibold text-slate-600">Parties Jouées</th>
-              <th className="py-4 px-6 font-semibold text-slate-600 text-right">MMR Actuel</th>
-            </tr>
-            </thead>
-            <tbody>
-            {leaderboard.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-8 text-center text-slate-500">
-                    Aucun joueur en base de données. N'oublie pas d'en ajouter !
-                  </td>
+          {/* EN-TÊTE ET NAVIGATION */}
+          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6">
+            <div>
+              <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600">
+                Lorcana Team Tracker
+              </h1>
+              <p className="text-slate-500 text-sm mt-1">Suivez le classement et l'historique de l'équipe.</p>
+            </div>
+            <Link
+                href="/admin"
+                className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+            >
+              ⚙️ Administration
+            </Link>
+          </header>
+
+          {/* BARRE D'OUTILS (Sélecteur & Synchro) */}
+          <section className="bg-white p-4 sm:px-6 sm:py-4 rounded-2xl shadow-sm border border-slate-200/60 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <span className="font-semibold text-slate-700 text-sm uppercase tracking-wider">Format</span>
+              {queues.length > 0 ? (
+                  <QueueSelector queues={queues} currentQueue={currentQueue} />
+              ) : (
+                  <span className="text-slate-400 italic text-sm">Aucun format actif</span>
+              )}
+            </div>
+
+            <div className="w-full sm:w-auto">
+              <SyncButton />
+            </div>
+          </section>
+
+          {/* TABLEAU DES SCORES */}
+          <section className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[500px]">
+                <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200">
+                  <th className="py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider w-20">Rang</th>
+                  <th className="py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Joueur</th>
+                  <th className="py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider text-center">Parties Jouées</th>
+                  <th className="py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider text-right">MMR Actuel</th>
                 </tr>
-            ) : (
-                leaderboard.map((player, index) => (
-                    <tr
-                        key={player.name}
-                        className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="py-4 px-6">
-                        {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`}
-                      </td>
-                      <td className="py-4 px-6 font-medium text-slate-800">
-                        {player.name}
-                      </td>
-                      <td className="py-4 px-6 text-slate-600">
-                        {player.gamesPlayed}
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-blue-600">
-                        {player.mmr}
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                {leaderboard.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-12 text-center text-slate-500">
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-3xl">📉</span>
+                          <p>Aucun joueur de l'équipe n'a joué dans ce format.</p>
+                        </div>
                       </td>
                     </tr>
-                ))
-            )}
-            </tbody>
-          </table>
-        </div>
-      </main>
+                ) : (
+                    leaderboard.map((player, index) => (
+                        <tr
+                            key={player.name}
+                            className="group hover:bg-indigo-50/30 transition-colors"
+                        >
+                          <td className="py-4 px-6">
+                            {getRankBadge(index)}
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-inner ${
+                                  index === 0 ? 'bg-gradient-to-br from-yellow-200 to-amber-100 text-yellow-700' :
+                                      index === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-100 text-slate-600' :
+                                          index === 2 ? 'bg-gradient-to-br from-orange-200 to-orange-100 text-amber-800' :
+                                              'bg-slate-100 text-slate-500'
+                              }`}>
+                                {player.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className={`font-semibold ${index < 3 ? 'text-slate-800' : 'text-slate-600'}`}>
+                            {player.name}
+                          </span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-center text-slate-500 font-medium">
+                            {player.gamesPlayed}
+                          </td>
+                          <td className="py-4 px-6 text-right">
+                        <span className={`font-bold text-lg ${
+                            index === 0 ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600' :
+                                'text-slate-700'
+                        }`}>
+                          {player.mmr}
+                        </span>
+                          </td>
+                        </tr>
+                    ))
+                )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </main>
+      </div>
   );
 }
