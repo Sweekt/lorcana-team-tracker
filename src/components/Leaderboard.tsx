@@ -40,14 +40,22 @@ export default function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
                                     <td className="py-4 px-6">{getRankBadge(index)}</td>
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-inner ${
-                                                index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                                                    index === 1 ? 'bg-slate-400/20 text-slate-300' :
-                                                        index === 2 ? 'bg-orange-500/20 text-orange-400' :
-                                                            'bg-slate-800 text-slate-400'
-                                            }`}>
-                                                {player.name.charAt(0).toUpperCase()}
-                                            </div>
+                                            {player.avatarUrl ? (
+                                                <img
+                                                    src={player.avatarUrl}
+                                                    alt={player.name}
+                                                    className="w-8 h-8 rounded-full object-cover border border-slate-700 shadow-inner"
+                                                />
+                                            ) : (
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-inner ${
+                                                    index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
+                                                        index === 1 ? 'bg-slate-400/20 text-slate-300' :
+                                                            index === 2 ? 'bg-orange-500/20 text-orange-400' :
+                                                                'bg-slate-800 text-slate-400'
+                                                }`}>
+                                                    {player.name.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
                                             <Link
                                                 href={`/player/${encodeURIComponent(player.name)}`}
                                                 className={`font-semibold hover:text-indigo-400 hover:underline transition-colors ${index < 3 ? 'text-slate-200' : 'text-slate-400'}`}

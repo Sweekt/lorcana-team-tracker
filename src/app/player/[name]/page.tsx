@@ -113,14 +113,38 @@ export default async function PlayerProfilePage(props: Props) {
                 {/* PARTIE HAUTE : PROFIL & GRAPH */}
                 <section className="bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-md">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-slate-800/80 pb-8">
-                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 p-1 shadow-lg shrink-0">
-                            <div className="w-full h-full bg-slate-950 rounded-[0.85rem] flex items-center justify-center text-4xl font-black text-indigo-400">
-                                {player.name.charAt(0).toUpperCase()}
+                        {/* Photo de profil conditionnelle */}
+                        {player.avatarUrl ? (
+                            <img
+                                src={player.avatarUrl}
+                                alt={player.name}
+                                className="w-24 h-24 rounded-2xl object-cover p-1 bg-gradient-to-tr from-indigo-600 to-violet-500 shadow-lg shrink-0"
+                            />
+                        ) : (
+                            <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 p-1 shadow-lg shrink-0">
+                                <div className="w-full h-full bg-slate-950 rounded-[0.85rem] flex items-center justify-center text-4xl font-black text-indigo-400">
+                                    {player.name.charAt(0).toUpperCase()}
+                                </div>
                             </div>
-                        </div>
-                        <div className="text-center sm:text-left space-y-1 my-auto">
-                            <h1 className="text-3xl font-extrabold tracking-tight">{player.name}</h1>
-                            <p className="text-slate-400 text-sm">Profil compétitif Lorcana • {allGamesAsc.length} matchs enregistrés</p>
+                        )}
+
+                        <div className="text-center sm:text-left space-y-3 my-auto w-full">
+                            <div>
+                                <h1 className="text-3xl font-extrabold tracking-tight">{player.name}</h1>
+                                <p className="text-slate-400 text-sm mt-1">Profil compétitif Lorcana • {allGamesAsc.length} matchs enregistrés</p>
+                            </div>
+
+                            {/* Bouton Dreamborn.ink (s'affiche uniquement si renseigné) */}
+                            {player.dreambornUrl && (
+                                <a
+                                    href={player.dreambornUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-indigo-500/20 hover:border-indigo-500/50 hover:text-indigo-300 transition-all text-sm font-medium text-slate-300"
+                                >
+                                    <span>📓 Voir les Decks sur Dreamborn</span>
+                                </a>
+                            )}
                         </div>
                     </div>
 

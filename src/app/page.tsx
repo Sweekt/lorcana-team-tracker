@@ -21,13 +21,21 @@ async function getLeaderboard(queueId: string) {
   const players = await prisma.player.findMany({
     select: {
       name: true,
+      avatarUrl: true,
       _count: { select: { games: { where: { queueId } } } },
       games: { where: { queueId }, orderBy: { startedAt: "desc" }, take: 1, select: { mmrAfter: true } },
     },
   });
+
   const leaderboard = players
       .filter((p) => p._count.games > 0)
-      .map((p) => ({ name: p.name, gamesPlayed: p._count.games, mmr: p.games[0]?.mmrAfter ?? 1000 }));
+      .map((p) => ({
+        name: p.name,
+        avatarUrl: p.avatarUrl,
+        gamesPlayed: p._count.games,
+        mmr: p.games[0]?.mmrAfter ?? 1000
+      }));
+
   return leaderboard.sort((a, b) => b.mmr - a.mmr);
 }
 

@@ -37,3 +37,22 @@ export async function toggleQueue(formData: FormData) {
         revalidatePath("/");
     }
 }
+
+export async function updatePlayerSettings(formData: FormData) {
+    const id = formData.get("id") as string;
+    const avatarUrl = formData.get("avatarUrl") as string;
+    const dreambornUrl = formData.get("dreambornUrl") as string;
+
+    if (id) {
+        await prisma.player.update({
+            where: { id },
+            data: {
+                // On remplace les chaînes vides par null pour la base de données
+                avatarUrl: avatarUrl || null,
+                dreambornUrl: dreambornUrl || null,
+            },
+        });
+        // On force Next.js à vider le cache de l'admin, de l'accueil et des profils
+        revalidatePath("/", "layout");
+    }
+}

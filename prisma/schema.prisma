@@ -7,12 +7,12 @@ datasource db {
 }
 
 model Player {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  apiToken  String   @unique
-  createdAt DateTime @default(now())
-
-  games Game[]
+  id           String  @id @default(uuid())
+  name         String  @unique
+  apiToken     String
+  avatarUrl    String?
+  dreambornUrl String?
+  games        Game[]
 }
 
 model Game {
