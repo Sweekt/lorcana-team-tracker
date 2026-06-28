@@ -12,10 +12,9 @@ export default function SyncButton() {
         setIsSyncing(true);
         try {
             const result = await syncTeamHistory();
-            alert(result.message); // On fait simple pour l'instant avec une alert native
+            alert(result.message);
 
             if (result.success) {
-                // Rafraîchit les données de la page courante (Server Components)
                 router.refresh();
             }
         } catch (error) {
@@ -29,10 +28,10 @@ export default function SyncButton() {
         <button
             onClick={handleSync}
             disabled={isSyncing}
-            className={`px-4 py-2 rounded-md font-medium text-white transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors border ${
                 isSyncing
-                    ? "bg-slate-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
+                    ? "bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed"
+                    : "bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500"
             }`}
         >
             {isSyncing ? "Synchronisation en cours..." : "🔄 Synchroniser l'historique"}
