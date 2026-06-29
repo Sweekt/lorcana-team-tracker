@@ -101,7 +101,7 @@ export default async function PlayerProfilePage(props: Props) {
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
-            <main className="max-w-4xl mx-auto p-8 space-y-8">
+            <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-8">
 
                 {/* Navigation */}
                 <div className="pt-2">

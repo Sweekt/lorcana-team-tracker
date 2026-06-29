@@ -21,7 +21,7 @@ export default async function AdminPage() {
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-200 pb-20">
-            <main className="max-w-4xl mx-auto p-8 space-y-12">
+            <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-12">
 
                 {/* EN-TÊTE */}
                 <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6">

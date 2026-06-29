@@ -60,7 +60,7 @@ export default async function Home(props: { searchParams: Promise<{ queue?: stri
 
   return (
       <div className="min-h-screen bg-slate-950 pb-20">
-        <main className="max-w-4xl mx-auto p-8 space-y-12">
+        <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-12">
 
           <Header />
 
