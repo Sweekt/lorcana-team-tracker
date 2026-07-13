@@ -50,3 +50,10 @@ model QueueConfig {
   id       String  @id
   isActive Boolean @default(true)
 }
+
+model Card {
+  id        String   @id
+  name      String
+  imageUrl  String
+  lastUsed  DateTime @default(now())
+}
