@@ -1,3 +1,5 @@
+import ColorDots from "@/components/ColorDots";
+
 export default function PlayerStatsView({ games }: { games: any[] }) {
     if (games.length === 0) {
         return <div className="bg-slate-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500">Aucune donnée pour calculer les statistiques.</div>;
@@ -7,7 +9,7 @@ export default function PlayerStatsView({ games }: { games: any[] }) {
     const wins = games.filter(g => g.result === "win").length;
     const globalWr = Math.round((wins / total) * 100);
 
-    // Stats Play vs Draw (Qui a commencé)
+    // Stats Play vs Draw
     const firstGames = games.filter(g => g.wentFirst === true);
     const firstWr = firstGames.length ? Math.round((firstGames.filter(g => g.result === "win").length / firstGames.length) * 100) : 0;
 
@@ -57,7 +59,13 @@ export default function PlayerStatsView({ games }: { games: any[] }) {
                 <div className="space-y-3">
                     {deckStats.map((d) => (
                         <div key={d.color} className="flex justify-between items-center bg-slate-950/50 p-3.5 rounded-xl border border-slate-800/60">
-                            <span className="font-semibold text-slate-300">{d.color}</span>
+
+                            {/* NOUVEAU : Affichage des pastilles + texte */}
+                            <div className="flex items-center gap-3">
+                                <ColorDots colors={d.color} />
+                                <span className="font-semibold text-slate-300">{d.color}</span>
+                            </div>
+
                             <div className="flex items-center gap-6">
                                 <span className="text-sm text-slate-400">{d.total} games</span>
                                 <span className={`font-bold text-sm px-2.5 py-1 rounded bg-slate-900 border ${d.wr >= 50 ? 'text-emerald-400 border-emerald-500/30' : 'text-red-400 border-red-500/30'}`}>
