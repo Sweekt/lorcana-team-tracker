@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { getDeckDetails } from "@/actions/cards";
 import ColorDots from "@/components/ColorDots";
+import Link from "next/link";
 
 // Types
 type GameRowProps = {
@@ -81,8 +82,13 @@ export default function GameRow({ game }: GameRowProps) {
                 </td>
 
                 {/* Joueur */}
-                <td className="py-3 px-4 font-medium text-slate-200">
-                    {game.player.name}
+                <td className="py-3 px-4 font-medium">
+                    <Link
+                        href={`/player/${encodeURIComponent(game.player.name)}`}
+                        className={`text-slate-200 hover:text-indigo-400 hover:underline transition-colors`}
+                    >
+                        {game.player.name}
+                    </Link>
                 </td>
 
                 {/* Matchup (Pastilles) */}
