@@ -55,5 +55,7 @@ model Card {
   id        String   @id
   name      String
   imageUrl  String
+  type      String?
+  cost      Int?
   lastUsed  DateTime @default(now())
 }
