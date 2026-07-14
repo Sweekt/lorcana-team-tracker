@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import HistoryTable from "@/components/HistoryTable";
 import MmrChart from "@/components/MmrChart";
@@ -102,14 +101,6 @@ export default async function PlayerProfilePage(props: Props) {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
             <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-8">
-
-                {/* Navigation */}
-                <div className="pt-2">
-                    <Link href="/" className="text-sm font-medium text-slate-400 hover:text-indigo-400 transition-colors inline-flex items-center gap-2">
-                        ← Retour au Leaderboard
-                    </Link>
-                </div>
-
                 {/* PARTIE HAUTE : PROFIL & GRAPH */}
                 <section className="bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-md">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-slate-800/80 pb-8">

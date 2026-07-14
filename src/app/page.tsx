@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import Header from "@/components/Header";
 import Leaderboard from "@/components/Leaderboard";
 import HistoryTable from "@/components/HistoryTable";
 import QueueSelector from "@/components/QueueSelector";
@@ -62,8 +61,6 @@ export default async function Home(props: { searchParams: Promise<{ queue?: stri
       <div className="min-h-screen bg-slate-950 pb-20">
         <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-12">
 
-          <Header />
-
           {/* Barre d'outils */}
           <section className="bg-slate-900 p-4 sm:px-6 sm:py-4 rounded-2xl shadow-sm border border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
@@ -82,7 +79,7 @@ export default async function Home(props: { searchParams: Promise<{ queue?: stri
           {/* Historique */}
           <section>
             <div className="mb-4">
-              <h2 className="text-xl font-bold text-slate-200">⚔️ Derniers Affrontements</h2>
+              <h2 className="text-xl font-bold text-slate-200">Historique</h2>
               <p className="text-slate-500 text-sm">Les 20 dernières parties de l'équipe dans ce format.</p>
             </div>
             <HistoryTable games={recentGames} />
