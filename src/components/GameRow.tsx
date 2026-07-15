@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { getDeckDetails } from "@/actions/cards";
 import ColorDots from "@/components/ColorDots";
 import Link from "next/link";
+import {toast} from "sonner";
 
 // Types
 type GameRowProps = {
@@ -49,7 +50,8 @@ export default function GameRow({ game }: GameRowProps) {
     const copyToClipboard = () => {
         const text = deckDetails.map(c => `${c.count}x ${c.name}`).join("\n");
         navigator.clipboard.writeText(text);
-        alert("Decklist copiée dans le presse-papier !");
+
+        toast.success("Decklist copiée dans le presse-papier !");
     };
 
     return (

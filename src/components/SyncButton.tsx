@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { syncTeamHistory } from "@/actions/sync";
 import { useRouter } from "next/navigation";
+import {toast} from "sonner";
 
 export default function SyncButton() {
     const [isSyncing, setIsSyncing] = useState(false);
@@ -10,15 +11,19 @@ export default function SyncButton() {
 
     const handleSync = async () => {
         setIsSyncing(true);
+        const toastId = toast.loading("Synchronisation en cours...");
+
         try {
             const result = await syncTeamHistory();
-            alert(result.message);
 
             if (result.success) {
+                toast.success(result.message, { id: toastId });
                 router.refresh();
+            } else {
+                toast.error(result.message, { id: toastId });
             }
         } catch (error) {
-            alert("Erreur réseau lors de la synchronisation.");
+            toast.error("Erreur réseau lors de la synchronisation.", { id: toastId });
         } finally {
             setIsSyncing(false);
         }
