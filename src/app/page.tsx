@@ -6,50 +6,57 @@ import Leaderboard from "@/components/Leaderboard";
 import HistoryTable from "@/components/HistoryTable";
 import QueueSelector from "@/components/QueueSelector";
 import SyncButton from "@/components/SyncButton";
+import { getCurrentTeamId } from "@/lib/current-team";
 
-async function getAvailableQueues() {
+async function getAvailableQueues(teamId: string) {
   const distinct = await prisma.game.findMany({
-    where: { queueId: { not: null } },
+    where: { teamId, queueId: { not: null } },
     select: { queueId: true },
     distinct: ["queueId"],
   });
+
   const configs = await prisma.queueConfig.findMany({ where: { isActive: false } });
   const disabledQueues = new Set(configs.map(c => c.id));
-  return distinct.map((g) => g.queueId as string).filter(queueId => !disabledQueues.has(queueId));
+
+  return distinct
+      .map((g) => g.queueId as string)
+      .filter(queueId => !disabledQueues.has(queueId));
 }
 
-async function getLeaderboard(queueId: string) {
-  const players = await prisma.player.findMany({
+async function getLeaderboard(queueId: string, teamId: string) {
+  const users = await prisma.user.findMany({
+    where: {
+      teams: { some: { teamId } }
+    },
     select: {
       name: true,
-      avatarUrl: true,
-      _count: { select: { games: { where: { queueId } } } },
-      games: { where: { queueId }, orderBy: { startedAt: "desc" }, take: 1, select: { mmrAfter: true } },
+      image: true,
+      _count: { select: { games: { where: { teamId, queueId } } } },
+      games: { where: { teamId, queueId }, orderBy: { startedAt: "desc" }, take: 1, select: { mmrAfter: true } },
     },
   });
 
-  const leaderboard = players
-      .filter((p) => p._count.games > 0)
-      .map((p) => ({
-        name: p.name,
-        avatarUrl: p.avatarUrl,
-        gamesPlayed: p._count.games,
-        mmr: p.games[0]?.mmrAfter ?? 1000
+  const leaderboard = users
+      .filter((u) => u._count.games > 0)
+      .map((u) => ({
+        name: u.name || "Joueur Inconnu",
+        avatarUrl: u.image,
+        gamesPlayed: u._count.games,
+        mmr: u.games[0]?.mmrAfter ?? 1000
       }));
 
   return leaderboard.sort((a, b) => b.mmr - a.mmr);
 }
 
-async function getRecentHistory(queueId: string) {
+async function getRecentHistory(queueId: string, teamId: string) {
   return await prisma.game.findMany({
-    where: { queueId },
+    where: { queueId, teamId },
     orderBy: { startedAt: "desc" },
     take: 20,
-    include: { player: { select: { name: true } } }
+    include: { user: { select: { name: true, image: true } } }
   });
 }
 
-// Composant Principal
 export default async function Home(props: { searchParams: Promise<{ queue?: string }> }) {
   const session = await getServerSession(authOptions);
 
@@ -63,13 +70,19 @@ export default async function Home(props: { searchParams: Promise<{ queue?: stri
       redirect("/onboarding");
     }
   }
+
+  const teamId = await getCurrentTeamId();
+  if (!teamId) {
+    redirect("/onboarding");
+  }
+
   const searchParams = await props.searchParams;
-  const queues = await getAvailableQueues();
+  const queues = await getAvailableQueues(teamId);
 
   const currentQueue = searchParams.queue || (queues.includes("core-bo1") ? "core-bo1" : queues[0] || "");
 
-  const leaderboard = currentQueue ? await getLeaderboard(currentQueue) : [];
-  const recentGames = currentQueue ? await getRecentHistory(currentQueue) : [];
+  const leaderboard = currentQueue ? await getLeaderboard(currentQueue, teamId) : [];
+  const recentGames = currentQueue ? await getRecentHistory(currentQueue, teamId) : [];
 
   return (
       <div className="min-h-screen bg-slate-950 pb-20">

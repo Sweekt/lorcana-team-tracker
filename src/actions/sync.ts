@@ -1,46 +1,63 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { getCurrentTeamId } from "@/lib/current-team";
 
-export async function syncTeamHistory() {
+export async function syncTeamHistory(teamId: string, targetUserId?: string) {
     try {
-        // 1. Récupérer tous les joueurs de l'équipe
-        const players = await prisma.player.findMany();
+        const teamId = await getCurrentTeamId();
+
+        if (!teamId) {
+            return { success: false, message: "Vous devez faire partie d'une équipe pour synchroniser." };
+        }
+
+        const usersToSync = await prisma.user.findMany({
+            where: {
+                teams: { some: { teamId: teamId } },
+                ...(targetUserId ? { id: targetUserId } : {}),
+                lorcanaApiKey: { not: null }
+            }
+        });
+
+        if (usersToSync.length === 0) {
+            return { success: false, message: "Aucun joueur avec une clé API valide n'a été trouvé." };
+        }
+
         let totalInserted = 0;
 
-        for (const player of players) {
+        for (const user of usersToSync) {
             let hasMore = true;
             let cursor: string | null = null;
+            let userInsertedCount = 0;
+            const queuesUpdated = new Set<string>();
 
             while (hasMore) {
-                // Construction de l'URL avec le curseur de pagination si nécessaire
                 const url = new URL("https://duels.ink/api/me/match-history");
                 if (cursor) url.searchParams.append("cursor", cursor);
 
-                // 2. Appel à l'API (à adapter si l'auth se fait via un header spécifique plutôt que Bearer)
                 const response = await fetch(url.toString(), {
                     headers: {
-                        "Authorization": `Bearer ${player.apiToken}`,
+                        "Authorization": `Bearer ${user.lorcanaApiKey}`,
                         "Content-Type": "application/json"
                     }
                 });
 
                 if (!response.ok) {
-                    console.error(`Erreur de synchro pour le joueur ${player.name}: ${response.status}`);
-                    break; // On passe au joueur suivant en cas d'erreur
+                    console.error(`Erreur de synchro pour le joueur ${user.name}: ${response.status}`);
+                    break;
                 }
 
                 const data = await response.json();
                 const games = data.games || [];
 
-                // 3. Filtrer uniquement le matchmaking
                 const matchmakingGames = games.filter((g: any) => g.mode === "matchmaking");
 
                 if (matchmakingGames.length > 0) {
-                    // Préparation du payload pour Prisma
                     const gamesToInsert = matchmakingGames.map((game: any) => ({
                         id: game.game_id,
-                        playerId: player.id,
+                        userId: user.id,
+                        teamId: teamId,
                         startedAt: new Date(game.started_at),
                         queueId: game.queue_id,
                         wentFirst: game.went_first,
@@ -58,42 +75,62 @@ export async function syncTeamHistory() {
                         replayUrl: game.replay_url
                     }));
 
-                    // 4. Vérification du point d'arrêt
-// On cherche quelles parties parmi celles reçues sont DÉJÀ en base de données
                     const existingGames = await prisma.game.findMany({
                         where: { id: { in: gamesToInsert.map((g: any) => g.id) } },
                         select: { id: true }
                     });
 
                     const existingIds = new Set(existingGames.map(g => g.id));
-
-// On ne garde que les parties qui n'existent PAS encore en base
                     const filteredGamesToInsert = gamesToInsert.filter((g: any) => !existingIds.has(g.id));
 
-                    let insertedCount = 0;
-
-// 5. Insertion uniquement s'il y a des nouveautés
                     if (filteredGamesToInsert.length > 0) {
                         const insertResult = await prisma.game.createMany({
                             data: filteredGamesToInsert,
-                            // On a retiré skipDuplicates ici car on a filtré manuellement au-dessus !
                         });
-                        insertedCount = insertResult.count;
-                        totalInserted += insertedCount;
+                        userInsertedCount += insertResult.count;
+                        totalInserted += insertResult.count;
+
+                        filteredGamesToInsert.forEach((g: any) => {
+                            if (g.queueId) queuesUpdated.add(g.queueId);
+                        });
                     }
 
-// Si on a croisé des games qui existaient déjà, on a fini pour ce joueur (point d'arrêt)
                     if (existingGames.length > 0) {
                         break;
                     }
                 }
 
-                // 6. Gestion de la pagination
                 cursor = data.next_cursor;
                 if (!cursor) {
                     hasMore = false;
                 }
             }
+
+            if (userInsertedCount > 0 && queuesUpdated.size > 0) {
+                for (const queue of Array.from(queuesUpdated)) {
+                    const latestGame = await prisma.game.findFirst({
+                        where: { userId: user.id, queueId: queue },
+                        orderBy: { startedAt: "desc" }
+                    });
+
+                    const totalGames = await prisma.game.count({
+                        where: { userId: user.id, queueId: queue }
+                    });
+
+                    if (latestGame && latestGame.mmrAfter !== null) {
+                        await prisma.userQueueStat.upsert({
+                            where: { userId_queueId: { userId: user.id, queueId: queue } },
+                            update: { mmr: Math.round(latestGame.mmrAfter), gamesPlayed: totalGames },
+                            create: { userId: user.id, queueId: queue, mmr: Math.round(latestGame.mmrAfter), gamesPlayed: totalGames }
+                        });
+                    }
+                }
+            }
+        }
+
+        revalidatePath("/");
+        if (targetUserId) {
+            revalidatePath(`/profile/${targetUserId}`);
         }
 
         return { success: true, message: `${totalInserted} nouvelles parties synchronisées !` };

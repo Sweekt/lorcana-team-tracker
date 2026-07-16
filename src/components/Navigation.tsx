@@ -25,7 +25,7 @@ export default function Navigation() {
                 <div className="flex items-center gap-4">
                     <Link href="/" className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600 hover:opacity-80 transition-opacity">
                         <span className="sm:hidden">Lorcana</span>
-                        <span className="hidden sm:inline">Lorcana Tracker</span>
+                        <span className="hidden sm:inline">LoreTracker</span>
                     </Link>
 
                     {/* Zone de test d'authentification */}
@@ -64,6 +64,9 @@ export default function Navigation() {
                             </Link>
                         );
                     })}
+                    <Link href="/settings" className="text-xs text-slate-400 hover:text-white transition-colors">
+                        Paramètres
+                    </Link>
                 </div>
 
             </div>

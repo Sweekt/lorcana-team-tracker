@@ -24,6 +24,7 @@ model User {
   sessions      Session[]
   teams         TeamMember[]
   games         Game[]
+  queueStats    UserQueueStat[]
 }
 
 model Account {
@@ -92,8 +93,7 @@ enum Role {
 // ------------------------------------------------------
 
 model Game {
-  id             String   @id @default(cuid())
-  queueId        String?
+  id             String   @id // On retire @default(cuid()) car l'ID vient de l'API (game.game_id)
   result         String
   wentFirst      Boolean?
   myDeckColors   String?
@@ -102,6 +102,13 @@ model Game {
   replayUrl      String?
   yourDecklist   String?  @db.Text
   startedAt      DateTime @default(now())
+  queueId        String?
+  endReason      String?
+  myLore         Int?
+  oppLore        Int?
+  mmrBefore      Float?
+  mmrAfter       Float?
+  mmrDelta       Float?
 
   userId         String
   teamId         String
@@ -125,4 +132,17 @@ model Card {
   type      String?
   cost      Int?
   lastUsed  DateTime @default(now())
+}
+
+model UserQueueStat {
+  id          String   @id @default(cuid())
+  queueId     String   // "core-bo1", "draft", etc.
+  mmr         Int      @default(1000)
+  gamesPlayed Int      @default(0)
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, queueId])
+  @@index([userId])
 }

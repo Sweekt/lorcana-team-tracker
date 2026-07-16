@@ -31,3 +31,46 @@ export async function createTeam(formData: FormData, userId: string) {
         return { error: "Une erreur est survenue lors de la création de l'équipe." };
     }
 }
+
+export async function joinTeam(token: string, userId: string) {
+    if (!token || token.trim() === "") {
+        return { error: "Le code d'invitation est requis." };
+    }
+
+    try {
+        const team = await prisma.team.findUnique({
+            where: { inviteToken: token.trim() }
+        });
+
+        if (!team) {
+            return { error: "Code d'invitation invalide ou expiré." };
+        }
+
+        const existingMember = await prisma.teamMember.findUnique({
+            where: {
+                userId_teamId: {
+                    userId: userId,
+                    teamId: team.id
+                }
+            }
+        });
+
+        if (existingMember) {
+            return { error: "Vous faites déjà partie de cette équipe." };
+        }
+
+        await prisma.teamMember.create({
+            data: {
+                userId: userId,
+                teamId: team.id,
+                role: "MEMBER",
+            }
+        });
+
+        revalidatePath("/");
+        return { success: true, teamId: team.id };
+    } catch (error) {
+        console.error("Erreur pour rejoindre la team:", error);
+        return { error: "Une erreur est survenue lors de l'ajout à l'équipe." };
+    }
+}

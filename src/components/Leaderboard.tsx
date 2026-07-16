@@ -35,15 +35,15 @@ export default function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
                                 </td>
                             </tr>
                         ) : (
-                            leaderboard.map((player, index) => (
-                                <tr key={player.name} className="group hover:bg-indigo-500/10 transition-colors">
+                            leaderboard.map((user, index) => (
+                                <tr key={user?.name} className="group hover:bg-indigo-500/10 transition-colors">
                                     <td className="py-4 px-6">{getRankBadge(index)}</td>
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
-                                            {player.avatarUrl ? (
+                                            {user?.image ? (
                                                 <img
-                                                    src={player.avatarUrl}
-                                                    alt={player.name}
+                                                    src={user?.image}
+                                                    alt={user?.name}
                                                     className="w-8 h-8 rounded-full object-cover border border-slate-700 shadow-inner"
                                                 />
                                             ) : (
@@ -53,21 +53,21 @@ export default function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
                                                             index === 2 ? 'bg-orange-500/20 text-orange-400' :
                                                                 'bg-slate-800 text-slate-400'
                                                 }`}>
-                                                    {player.name.charAt(0).toUpperCase()}
+                                                    {user?.name.charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                             <Link
-                                                href={`/player/${encodeURIComponent(player.name)}`}
+                                                href={`/player/${encodeURIComponent(user?.name)}`}
                                                 className={`font-semibold hover:text-indigo-400 hover:underline transition-colors ${index < 3 ? 'text-slate-200' : 'text-slate-400'}`}
                                             >
-                                                {player.name}
+                                                {user?.name}
                                             </Link>
                                         </div>
                                     </td>
-                                    <td className="py-4 px-6 text-center text-slate-400 font-medium">{player.gamesPlayed}</td>
+                                    <td className="py-4 px-6 text-center text-slate-400 font-medium">{user.gamesPlayed}</td>
                                     <td className="py-4 px-6 text-right">
                       <span className={`font-bold text-lg ${index === 0 ? 'text-indigo-400' : 'text-slate-300'}`}>
-                        {player.mmr}
+                        {user.mmr}
                       </span>
                                     </td>
                                 </tr>

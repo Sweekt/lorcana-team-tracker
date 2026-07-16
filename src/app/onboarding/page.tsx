@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createTeam } from "@/actions/team";
+import { createTeam, joinTeam } from "@/actions/team";
 import { toast } from "sonner";
 
 export default function OnboardingPage() {
@@ -11,27 +11,36 @@ export default function OnboardingPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
 
-    // Redirection sécurité si non connecté
     if (status === "unauthenticated") {
         router.push("/");
         return null;
     }
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!session?.user?.id) return;
-
         setIsLoading(true);
         const formData = new FormData(e.currentTarget);
-
         const result = await createTeam(formData, session.user.id);
+        handleResult(result, "Équipe créée avec succès !");
+    };
 
+    const handleJoin = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!session?.user?.id) return;
+        setIsLoading(true);
+        const formData = new FormData(e.currentTarget);
+        const token = formData.get("token") as string;
+        const result = await joinTeam(token, session.user.id);
+        handleResult(result, "Équipe rejointe avec succès !");
+    };
+
+    const handleResult = (result: any, successMessage: string) => {
         if (result.error) {
             toast.error(result.error);
             setIsLoading(false);
         } else {
-            toast.success("Équipe créée avec succès !");
-            // On renvoie l'utilisateur vers la page principale une fois la team créée
+            toast.success(successMessage);
             router.push("/");
         }
     };
@@ -44,42 +53,37 @@ export default function OnboardingPage() {
                         Bienvenue sur Lorcana Tracker
                     </h1>
                     <p className="text-slate-400 text-sm">
-                        Pour commencer à enregistrer vos matchs, vous devez créer une équipe ou en rejoindre une.
+                        Créez votre équipe ou rejoignez celle de vos amis.
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Formulaire de création */}
+                <form onSubmit={handleCreate} className="space-y-4 mb-6">
                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-1">
-                            Nom de votre nouvelle équipe
-                        </label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            required
-                            placeholder="Ex: Les Illumineers de Lyon"
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                        />
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Créer une nouvelle équipe</label>
+                        <input type="text" name="name" required placeholder="Nom de l'équipe" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-200 focus:border-indigo-500 outline-none" />
                     </div>
-
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium transition-colors ${
-                            isLoading
-                                ? "bg-slate-800 text-slate-400 cursor-not-allowed"
-                                : "bg-indigo-600 hover:bg-indigo-500 text-white"
-                        }`}
-                    >
-                        {isLoading ? "Création en cours..." : "Créer mon équipe"}
+                    <button type="submit" disabled={isLoading} className="w-full py-2 rounded-lg font-medium bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50">
+                        Créer mon équipe
                     </button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-slate-500">
-                    <p>Un ami vous a invité ?</p>
-                    <p>Demandez-lui son lien d'invitation secret !</p>
+                <div className="relative flex py-2 items-center">
+                    <div className="flex-grow border-t border-slate-800"></div>
+                    <span className="flex-shrink-0 mx-4 text-slate-500 text-sm">OU</span>
+                    <div className="flex-grow border-t border-slate-800"></div>
                 </div>
+
+                {/* Formulaire pour rejoindre */}
+                <form onSubmit={handleJoin} className="space-y-4 mt-6">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Rejoindre via un code secret</label>
+                        <input type="text" name="token" required placeholder="Ex: 550e8400-e29b-41d4-a716-446655440000" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-200 focus:border-indigo-500 outline-none" />
+                    </div>
+                    <button type="submit" disabled={isLoading} className="w-full py-2 rounded-lg font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 disabled:opacity-50">
+                        Rejoindre l'équipe
+                    </button>
+                </form>
             </div>
         </div>
     );

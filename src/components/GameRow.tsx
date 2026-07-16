@@ -86,10 +86,10 @@ export default function GameRow({ game }: GameRowProps) {
                 {/* Joueur */}
                 <td className="py-3 px-4 font-medium">
                     <Link
-                        href={`/player/${encodeURIComponent(game.player.name)}`}
+                        href={`/player/${encodeURIComponent(game.user?.name)}`}
                         className={`text-slate-200 hover:text-indigo-400 hover:underline transition-colors`}
                     >
-                        {game.player.name}
+                        {game.user?.name}
                     </Link>
                 </td>
 
