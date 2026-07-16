@@ -97,7 +97,6 @@ export default async function HomePage() {
 
                 {/* 2. LIENS DE NAVIGATION PRINCIPAUX */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl mt-2">
-
                     {/* Bouton Leaderboard */}
                     <Link href="/leaderboard" className="group flex items-center gap-4 bg-indigo-500/10 border border-indigo-500/20 group-hover:bg-indigo-500/20 shadow-lg hover:shadow-indigo-500/20 p-4 sm:p-5 rounded-2xl transition-all">
                         <LeaderboardIcon className="text-indigo-400 w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -106,7 +105,6 @@ export default async function HomePage() {
                             <p className="text-slate-400 text-xs sm:text-sm mt-1">Classement et historique</p>
                         </div>
                     </Link>
-
                     {/* Bouton Roster */}
                     <Link href="/roster" className="group flex items-center gap-4 bg-violet-500/10 border border-violet-500/20 group-hover:bg-violet-500/20 shadow-lg hover:shadow-violet-500/20 p-4 sm:p-5 rounded-2xl transition-all">
                         <RosterIcon className="text-violet-400 w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -115,9 +113,7 @@ export default async function HomePage() {
                             <p className="text-slate-400 text-xs sm:text-sm mt-1">Profils et statistiques</p>
                         </div>
                     </Link>
-
                 </div>
-
             </main>
         </div>
     );
