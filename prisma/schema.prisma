@@ -63,7 +63,7 @@ model Team {
   logoUrl     String?
   inviteToken String   @unique @default(uuid())
   createdAt   DateTime @default(now())
-
+  activeQueues  String[]     @default(["core-bo1"])
   members     TeamMember[]
   games       Game[]
 }
@@ -118,11 +118,6 @@ model Game {
 
   @@index([teamId])
   @@index([userId])
-}
-
-model QueueConfig {
-  id       String  @id
-  isActive Boolean @default(true)
 }
 
 model Card {

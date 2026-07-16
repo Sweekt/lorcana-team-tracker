@@ -7,20 +7,15 @@ import HistoryTable from "@/components/HistoryTable";
 import QueueSelector from "@/components/QueueSelector";
 import SyncButton from "@/components/SyncButton";
 import { getCurrentTeamId } from "@/lib/current-team";
+import Link from "next/link";
 
 async function getAvailableQueues(teamId: string) {
-  const distinct = await prisma.game.findMany({
-    where: { teamId, queueId: { not: null } },
-    select: { queueId: true },
-    distinct: ["queueId"],
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    select: { activeQueues: true }
   });
 
-  const configs = await prisma.queueConfig.findMany({ where: { isActive: false } });
-  const disabledQueues = new Set(configs.map(c => c.id));
-
-  return distinct
-      .map((g) => g.queueId as string)
-      .filter(queueId => !disabledQueues.has(queueId));
+  return team?.activeQueues || [];
 }
 
 async function getLeaderboard(queueId: string, teamId: string) {
@@ -76,6 +71,11 @@ export default async function Home(props: { searchParams: Promise<{ queue?: stri
     redirect("/onboarding");
   }
 
+  const currentMember = await prisma.teamMember.findUnique({
+    where: { userId_teamId: { userId: session?.user?.id as string, teamId: teamId } }
+  });
+  const isAdmin = currentMember?.role === "ADMIN";
+
   const searchParams = await props.searchParams;
   const queues = await getAvailableQueues(teamId);
 
@@ -98,7 +98,14 @@ export default async function Home(props: { searchParams: Promise<{ queue?: stri
                   <span className="text-slate-500 italic text-sm">Aucun format actif</span>
               )}
             </div>
-            <div className="w-full sm:w-auto"><SyncButton /></div>
+            <div className="w-full sm:w-auto flex gap-3">
+              {isAdmin && (
+                  <Link href="/team/settings" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded text-sm text-slate-300 transition-colors border border-slate-700">
+                    ⚙️ Gérer l'équipe
+                  </Link>
+              )}
+              <SyncButton />
+            </div>
           </section>
 
           <Leaderboard leaderboard={leaderboard} />

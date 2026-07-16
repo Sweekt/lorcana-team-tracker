@@ -1,5 +1,7 @@
 "use server";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -72,5 +74,51 @@ export async function joinTeam(token: string, userId: string) {
     } catch (error) {
         console.error("Erreur pour rejoindre la team:", error);
         return { error: "Une erreur est survenue lors de l'ajout à l'équipe." };
+    }
+}
+
+async function verifyAdmin(teamId: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return false;
+
+    const membership = await prisma.teamMember.findUnique({
+        where: { userId_teamId: { userId: session.user.id, teamId } }
+    });
+
+    return membership?.role === "ADMIN";
+}
+
+export async function kickMember(targetUserId: string, teamId: string) {
+    const isAdmin = await verifyAdmin(teamId);
+    if (!isAdmin) return { error: "Action non autorisée. Vous n'êtes pas capitaine." };
+
+    try {
+        await prisma.teamMember.delete({
+            where: { userId_teamId: { userId: targetUserId, teamId } }
+        });
+        revalidatePath("/team/settings");
+        return { success: true };
+    } catch (error) {
+        return { error: "Erreur lors de l'expulsion du joueur." };
+    }
+}
+
+export async function updateTeamQueues(teamId: string, formData: FormData) {
+    const isAdmin = await verifyAdmin(teamId);
+    if (!isAdmin) return { error: "Action non autorisée." };
+
+    const selectedQueues = formData.getAll("queues") as string[];
+
+    try {
+        await prisma.team.update({
+            where: { id: teamId },
+            data: { activeQueues: selectedQueues }
+        });
+        revalidatePath("/team/settings");
+        revalidatePath("/"); // On rafraîchit l'accueil pour le QueueSelector
+        return { success: true };
+    } catch (error) {
+        console.error("ERREUR PRISMA UPDATE QUEUES:", error); // 👈 AJOUTE CECI
+        return { error: "Erreur lors de la mise à jour des formats." };
     }
 }

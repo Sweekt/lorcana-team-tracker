@@ -89,7 +89,7 @@ export default function GameRow({ game }: GameRowProps) {
                         href={`/player/${encodeURIComponent(game.user?.name)}`}
                         className={`text-slate-200 hover:text-indigo-400 hover:underline transition-colors`}
                     >
-                        {game.user?.name}
+                        {game.user?.name.charAt(0).toUpperCase() + game.user?.name.slice(1)}
                     </Link>
                 </td>
 

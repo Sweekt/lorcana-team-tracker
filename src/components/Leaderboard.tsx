@@ -40,9 +40,9 @@ export default function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
                                     <td className="py-4 px-6">{getRankBadge(index)}</td>
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
-                                            {user?.image ? (
+                                            {user?.avatarUrl ? (
                                                 <img
-                                                    src={user?.image}
+                                                    src={user?.avatarUrl}
                                                     alt={user?.name}
                                                     className="w-8 h-8 rounded-full object-cover border border-slate-700 shadow-inner"
                                                 />
@@ -60,7 +60,7 @@ export default function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
                                                 href={`/player/${encodeURIComponent(user?.name)}`}
                                                 className={`font-semibold hover:text-indigo-400 hover:underline transition-colors ${index < 3 ? 'text-slate-200' : 'text-slate-400'}`}
                                             >
-                                                {user?.name}
+                                                {user?.name.charAt(0).toUpperCase() + user?.name.slice(1)}
                                             </Link>
                                         </div>
                                     </td>
