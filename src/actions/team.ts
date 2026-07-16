@@ -115,10 +115,32 @@ export async function updateTeamQueues(teamId: string, formData: FormData) {
             data: { activeQueues: selectedQueues }
         });
         revalidatePath("/team/settings");
-        revalidatePath("/"); // On rafraîchit l'accueil pour le QueueSelector
+        revalidatePath("/");
         return { success: true };
     } catch (error) {
-        console.error("ERREUR PRISMA UPDATE QUEUES:", error); // 👈 AJOUTE CECI
+        console.error("ERREUR PRISMA UPDATE QUEUES:", error);
         return { error: "Erreur lors de la mise à jour des formats." };
+    }
+}
+
+export async function updateTeamLogo(teamId: string, formData: FormData) {
+    const isAdmin = await verifyAdmin(teamId);
+    if (!isAdmin) return { error: "Action non autorisée." };
+
+    const logoBase64 = formData.get("logo") as string;
+
+    try {
+        await prisma.team.update({
+            where: { id: teamId },
+            data: { logoUrl: logoBase64 }
+        });
+
+        revalidatePath("/");
+        revalidatePath("/team/settings");
+
+        return { success: true };
+    } catch (error) {
+        console.error("Erreur logo:", error);
+        return { error: "Erreur lors de la mise à jour du logo." };
     }
 }

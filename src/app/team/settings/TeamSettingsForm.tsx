@@ -1,11 +1,44 @@
 "use client";
 
-import { kickMember, updateTeamQueues } from "@/actions/team";
+import { kickMember, updateTeamQueues, updateTeamLogo } from "@/actions/team";
 import { toast } from "sonner";
 import { useState } from "react";
 
-export default function TeamSettingsForm({ team, availableQueues, inviteLink, currentUserId }: any) {
+export default function TeamSettingsForm({ team, availableQueues, inviteLink }: any) {
     const [isSaving, setIsSaving] = useState(false);
+    const [logoPreview, setLogoPreview] = useState(team.logoUrl || "");
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 1024 * 1024) {
+            toast.error("L'image est trop volumineuse (maximum 1 Mo).");
+            e.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setLogoPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleSaveLogo = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsUploadingLogo(true);
+
+        const formData = new FormData();
+        formData.append("logo", logoPreview);
+
+        const result = await updateTeamLogo(team.id, formData);
+        if (result.error) toast.error(result.error);
+        else toast.success("Logo mis à jour avec succès !");
+
+        setIsUploadingLogo(false);
+    };
 
     const handleCopy = () => {
         navigator.clipboard.writeText(inviteLink);
@@ -34,7 +67,42 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink, cu
 
     return (
         <div className="space-y-8">
-            {/* SECTION 1 : LIEN D'INVITATION */}
+            {/* SECTION LOGO D'ÉQUIPE */}
+            <section className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm">
+                <h2 className="text-lg font-bold text-slate-200 mb-4">Logo de l'équipe</h2>
+
+                <form onSubmit={handleSaveLogo} className="flex flex-col sm:flex-row items-center gap-6">
+                    {/* Prévisualisation */}
+                    <div className="shrink-0">
+                        {logoPreview ? (
+                            <img src={logoPreview} alt="Logo preview" className="w-24 h-24 rounded-xl object-cover border border-slate-700 shadow-inner" />
+                        ) : (
+                            <div className="w-24 h-24 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-500 text-sm font-medium">
+                                Aucun logo
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-1 space-y-3 w-full">
+                        <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/webp"
+                            onChange={handleLogoChange}
+                            className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20 file:cursor-pointer file:transition-colors"
+                        />
+                        <p className="text-xs text-slate-500">Formats acceptés : JPG, PNG, WEBP. Taille maximale : 1 Mo.</p>
+
+                        <button
+                            type="submit"
+                            disabled={isUploadingLogo || !logoPreview || logoPreview === team.logoUrl}
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                            {isUploadingLogo ? "Sauvegarde..." : "Enregistrer le logo"}
+                        </button>
+                    </div>
+                </form>
+            </section>
+
             <section className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-lg font-bold text-slate-200 mb-4">Lien d'invitation secret</h2>
                 <div className="flex gap-2">
@@ -50,7 +118,6 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink, cu
                 </div>
             </section>
 
-            {/* SECTION 2 : MEMBRES */}
             <section className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-lg font-bold text-slate-200 mb-4">Membres de l'équipe</h2>
                 <div className="space-y-3">
@@ -77,7 +144,6 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink, cu
                 </div>
             </section>
 
-            {/* SECTION 3 : FORMATS ACTIFS */}
             <section className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-lg font-bold text-slate-200 mb-2">Formats autorisés</h2>
                 <p className="text-sm text-slate-500 mb-4">Sélectionnez les files d'attente qui s'afficheront sur le tableau de bord de votre équipe.</p>

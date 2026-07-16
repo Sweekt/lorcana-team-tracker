@@ -19,7 +19,7 @@ export default function Navigation() {
 
     const navItems = [
         { name: "Leaderboard", icon: <LeaderboardIcon className="w-5 h-5 sm:w-4 sm:h-4" />, path: "/leaderboard" },
-        { name: "Roster", icon: <RosterIcon className="w-5 h-5 sm:w-4 sm:h-4" />, path: "/roster" }, // Lien corrigé !
+        { name: "Roster", icon: <RosterIcon className="w-5 h-5 sm:w-4 sm:h-4" />, path: "/roster" },
         { name: "Paramètres", icon: <AdminIcon className="w-5 h-5 sm:w-4 sm:h-4" />, path: "/settings" },
     ];
 

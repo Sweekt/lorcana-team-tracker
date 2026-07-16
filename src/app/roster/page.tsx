@@ -14,7 +14,6 @@ export default async function RosterPage() {
         redirect("/");
     }
 
-    // 2. Récupération uniquement des joueurs de cette équipe
     const teamUsers = await prisma.user.findMany({
         where: {
             teams: { some: { teamId: teamId } }
@@ -24,7 +23,7 @@ export default async function RosterPage() {
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-200 pb-20">
-            <main className="max-w-6xl mx-auto p-8 space-y-12 mt-8">
+            <main className="max-w-6xl mx-auto p-8 space-y-12">
 
                 {/* EN-TÊTE */}
                 <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6">
@@ -67,8 +66,6 @@ export default async function RosterPage() {
                                                 {displayName.charAt(0)}
                                             </div>
                                         )}
-                                        {/* Petit point décoratif pour faire "En ligne / Actif" */}
-                                        <div className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-900 rounded-full"></div>
                                     </div>
 
                                     {/* NOM DU JOUEUR */}

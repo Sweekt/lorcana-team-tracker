@@ -5,14 +5,13 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import LoginButton from "@/components/LoginButton";
 import Link from "next/link";
-import SyncButton from "@/components/SyncButton";
+import RosterIcon from "@/assets/ic_roster.svg"
+import DuelIcon from "@/assets/ic_duel.svg"
+import LeaderboardIcon from "@/assets/ic_leaderboard.svg"
 
 export default async function HomePage() {
     const session = await getServerSession(authOptions);
 
-    // ==========================================
-    // 1. MODE PUBLIC : LANDING PAGE
-    // ==========================================
     if (!session?.user) {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden">
@@ -49,7 +48,6 @@ export default async function HomePage() {
     // 3. MODE PRIVÉ : DASHBOARD DE L'ÉQUIPE
     // ==========================================
 
-    // On récupère l'équipe, le nombre de membres et le nombre de parties jouées
     const team = await prisma.team.findUnique({
         where: { id: teamId },
         include: {
@@ -61,83 +59,63 @@ export default async function HomePage() {
 
     if (!team) redirect("/onboarding");
 
-    // On vérifie si l'utilisateur actuel est le capitaine pour lui afficher le bouton de gestion
-    const currentMember = await prisma.teamMember.findUnique({
-        where: { userId_teamId: { userId: session.user.id, teamId: teamId } }
-    });
-    const isAdmin = currentMember?.role === "ADMIN";
-
     return (
-        <div className="min-h-screen bg-slate-950 pb-20 p-4 sm:p-8">
-            <main className="max-w-5xl mx-auto space-y-8 mt-8">
+        <div className="min-h-dvh bg-slate-950 pb-20 p-4 sm:p-8 relative overflow-hidden">
+            <div className="absolute top-20 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-                {/* EN-TÊTE : Logo, Nom et Actions */}
-                <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-sm">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6">
-                        {/* Logo de l'équipe */}
-                        {team.logoUrl ? (
-                            <img src={team.logoUrl} alt={`Logo ${team.name}`} className="w-24 h-24 rounded-xl object-cover border border-slate-700 shadow-md" />
-                        ) : (
-                            <div className="w-24 h-24 rounded-xl bg-linear-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-4xl font-black text-white shadow-md">
-                                {team.name.charAt(0).toUpperCase()}
-                            </div>
-                        )}
+            <main className="max-w-4xl mx-auto flex flex-col items-center mt-12 sm:mt-20 relative z-10 space-y-4">
 
-                        <div className="text-center sm:text-left">
-                            <h1 className="text-3xl font-extrabold text-slate-100">{team.name}</h1>
-                            <p className="text-slate-400 mt-1">Hub de l'équipe compétitive</p>
+                <div className="flex flex-col items-center text-center">
+
+                    {team.logoUrl ? (
+                        <img
+                            src={team.logoUrl}
+                            alt={`Logo ${team.name}`}
+                            className="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl object-cover border-4 border-slate-900 shadow-2xl shadow-indigo-900/20"
+                        />
+                    ) : (
+                        <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl bg-linear-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-6xl font-black text-white shadow-2xl shadow-indigo-900/20 border-4 border-slate-900">
+                            {team.name.charAt(0).toUpperCase()}
                         </div>
-                    </div>
+                    )}
 
-                    {/* Barre d'outils (Capitaine + Synchro) */}
-                    <div className="flex flex-wrap justify-center sm:justify-end gap-3 w-full sm:w-auto">
-                        {isAdmin && (
-                            <Link href="/team/settings" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm text-slate-300 transition-colors border border-slate-700 font-medium shadow-sm">
-                                ⚙️ Gérer l'équipe
-                            </Link>
-                        )}
-                        <SyncButton />
+                    <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-100 tracking-tight mt-8 mb-6">
+                        {team.name}
+                    </h1>
+
+                    <div className="flex flex-wrap justify-center items-center gap-3 text-sm">
+                        <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 px-5 py-2.5 rounded-full text-slate-300 font-medium shadow-sm">
+                            <RosterIcon className="text-white w-4 h-4" />
+                            <span className="text-white font-bold">{team._count.members}</span> Membres
+                        </div>
+                        <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 px-5 py-2.5 rounded-full text-slate-300 font-medium shadow-sm">
+                            <DuelIcon className="text-white w-4 h-4" />
+                            <span className="text-white font-bold">{team._count.games}</span> Parties
+                        </div>
                     </div>
                 </div>
 
-                {/* STATISTIQUES GLOBALES */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm">
-                        <div className="text-4xl mb-2">👥</div>
-                        <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Membres Actifs</p>
-                        <p className="text-3xl font-bold text-slate-100 mt-1">{team._count.members}</p>
-                    </div>
+                {/* 2. LIENS DE NAVIGATION PRINCIPAUX */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl mt-2">
 
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm">
-                        <div className="text-4xl mb-2">⚔️</div>
-                        <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Parties Enregistrées</p>
-                        <p className="text-3xl font-bold text-slate-100 mt-1">{team._count.games}</p>
-                    </div>
-
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm">
-                        <div className="text-4xl mb-2">🎯</div>
-                        <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Formats Compétitifs</p>
-                        <p className="text-3xl font-bold text-slate-100 mt-1">{team.activeQueues.length}</p>
-                    </div>
-                </div>
-
-                {/* LIENS RAPIDES */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
-                    <Link href="/leaderboard" className="group bg-slate-900 hover:bg-indigo-900/20 border border-slate-800 hover:border-indigo-500/50 p-6 rounded-2xl transition-all flex items-center justify-between">
-                        <div>
-                            <h3 className="text-xl font-bold text-slate-200 group-hover:text-indigo-300 transition-colors">🏆 Voir le Leaderboard</h3>
-                            <p className="text-slate-400 text-sm mt-1">Consultez le classement interne et l'historique complet.</p>
+                    {/* Bouton Leaderboard */}
+                    <Link href="/leaderboard" className="group flex items-center gap-4 bg-indigo-500/10 border border-indigo-500/20 group-hover:bg-indigo-500/20 shadow-lg hover:shadow-indigo-500/20 p-4 sm:p-5 rounded-2xl transition-all">
+                        <LeaderboardIcon className="text-indigo-400 w-6 h-6 group-hover:scale-110 transition-transform" />
+                        <div className="text-left">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-200 group-hover:text-indigo-300 transition-colors leading-tight">Leaderboard</h3>
+                            <p className="text-slate-400 text-xs sm:text-sm mt-1">Classement et historique</p>
                         </div>
-                        <span className="text-slate-600 group-hover:text-indigo-400 text-2xl transition-colors">→</span>
                     </Link>
 
-                    <Link href="/roster" className="group bg-slate-900 hover:bg-indigo-900/20 border border-slate-800 hover:border-indigo-500/50 p-6 rounded-2xl transition-all flex items-center justify-between">
-                        <div>
-                            <h3 className="text-xl font-bold text-slate-200 group-hover:text-indigo-300 transition-colors">📋 Voir le Roster</h3>
-                            <p className="text-slate-400 text-sm mt-1">Accédez aux profils détaillés de tous les membres.</p>
+                    {/* Bouton Roster */}
+                    <Link href="/roster" className="group flex items-center gap-4 bg-violet-500/10 border border-violet-500/20 group-hover:bg-violet-500/20 shadow-lg hover:shadow-violet-500/20 p-4 sm:p-5 rounded-2xl transition-all">
+                        <RosterIcon className="text-violet-400 w-6 h-6 group-hover:scale-110 transition-transform" />
+                        <div className="text-left">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-200 group-hover:text-violet-300 transition-colors leading-tight">Roster</h3>
+                            <p className="text-slate-400 text-xs sm:text-sm mt-1">Profils et statistiques</p>
                         </div>
-                        <span className="text-slate-600 group-hover:text-indigo-400 text-2xl transition-colors">→</span>
                     </Link>
+
                 </div>
 
             </main>
