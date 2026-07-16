@@ -1,10 +1,12 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import Leaderboard from "@/components/Leaderboard";
 import HistoryTable from "@/components/HistoryTable";
 import QueueSelector from "@/components/QueueSelector";
 import SyncButton from "@/components/SyncButton";
 
-// Fonctions Data Fetching (inchangées)
 async function getAvailableQueues() {
   const distinct = await prisma.game.findMany({
     where: { queueId: { not: null } },
@@ -49,6 +51,18 @@ async function getRecentHistory(queueId: string) {
 
 // Composant Principal
 export default async function Home(props: { searchParams: Promise<{ queue?: string }> }) {
+  const session = await getServerSession(authOptions);
+
+  if (session?.user?.email) {
+    const userWithTeams = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { teams: true }
+    });
+
+    if (userWithTeams && userWithTeams.teams.length === 0) {
+      redirect("/onboarding");
+    }
+  }
   const searchParams = await props.searchParams;
   const queues = await getAvailableQueues();
 

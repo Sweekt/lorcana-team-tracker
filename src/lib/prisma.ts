@@ -1,21 +1,13 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-const prismaClientSingleton = () => {
-    // L'adapter s'occupe de tout ouvrir proprement à partir de l'URL
-    const adapter = new PrismaBetterSqlite3({
-        url: process.env.DATABASE_URL || "file:./dev.db"
-    })
+// On utilise l'URL de connexion définie dans le .env
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
 
-    return new PrismaClient({ adapter })
-}
+// On passe l'adaptateur au constructeur de Prisma v7
+const prisma = new PrismaClient({ adapter });
 
-declare const globalThis: {
-    prismaGlobal: ReturnType<typeof prismaClientSingleton>;
-} & typeof global;
-
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
-
-export default prisma
-
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+export default prisma;

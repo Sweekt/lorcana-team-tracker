@@ -1,6 +1,34 @@
-/node_modules
-/.next
 /.idea
 next-env.d.ts
 package-lock.json
+
+# Dépendances
+node_modules
+.pnp
+.pnp.js
+
+# Fichiers de build Next.js
+.next/
+out/
+build/
+
+# Fichiers d'environnement (LE PLUS IMPORTANT)
 .env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Base de données locale (Si tu utilises SQLite en dev)
+*.db
+*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers système
+.DS_Store
