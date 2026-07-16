@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getCurrentTeamId } from "@/lib/current-team";
 
-export async function syncTeamHistory(teamId: string, targetUserId?: string) {
+export async function syncTeamHistory(targetUserId?: string) {
     try {
         const teamId = await getCurrentTeamId();
 
