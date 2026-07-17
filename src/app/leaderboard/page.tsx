@@ -46,11 +46,11 @@ async function getLeaderboard(queueId: string, teamId: string) {
 }
 
 async function getRecentHistory(queueId: string, teamId: string) {
-  return await prisma.game.findMany({
-    where: { queueId, teamId },
-    orderBy: { startedAt: "desc" },
+  return prisma.game.findMany({
+    where: {queueId, teamId},
+    orderBy: {startedAt: "desc"},
     take: 20,
-    include: { user: { select: { name: true, image: true } } }
+    include: {user: {select: {name: true, image: true}}}
   });
 }
 
@@ -101,11 +101,11 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
               )}
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-              <span className="font-semibold text-slate-400 text-sm uppercase tracking-wider">Format</span>
+              <span className="font-semibold text-slate-400 text-xs uppercase tracking-wider">Format</span>
               {queues.length > 0 ? (
                   <QueueSelector queues={queues} currentQueue={currentQueue} />
               ) : (
-                  <span className="text-slate-500 italic text-sm">Aucun format actif</span>
+                  <span className="text-slate-500 italic text-xs">Aucun format actif</span>
               )}
             </div>
           </section>

@@ -16,7 +16,7 @@ type GameRowProps = {
         myDeckColors: string | null; oppDeckColors: string | null;
         oppDisplayName: string; replayUrl: string | null;
         yourDecklist: string | null; startedAt: Date;
-        player: { name: string };
+        user: { name: string };
     };
 };
 

@@ -10,6 +10,8 @@ import PlayerViewController from "@/components/PlayerViewController";
 import PlayerStatsView from "@/components/PlayerStatsView";
 import Pagination from "@/components/Pagination";
 import SyncButton from "@/components/SyncButton";
+import StarIcon from "@/assets/ic_star.svg";
+import GraphIcon from "@/assets/ic_graph.svg";
 
 type Props = {
     params: Promise<{ name: string }>;
@@ -100,7 +102,7 @@ export default async function PlayerProfilePage(props: Props) {
             orderBy: { startedAt: "desc" },
             skip: (currentPage - 1) * PAGE_SIZE,
             take: PAGE_SIZE,
-            include: { user: { select: { name: true, image: true } } } // 👈 Adapté pour ton composant HistoryTable
+            include: { user: { select: { name: true, image: true } } }
         });
 
         tabContent = (
@@ -115,7 +117,7 @@ export default async function PlayerProfilePage(props: Props) {
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
-            <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-8">
+            <main className="max-w-4xl lg:max-w-7xl mx-auto p-6 space-y-8">
                 <section className="bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-md">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-slate-800/80 pb-8">
                         {targetUser.image ? (
@@ -135,11 +137,11 @@ export default async function PlayerProfilePage(props: Props) {
                         <div className="text-center sm:text-left space-y-3 my-auto w-full">
                             <div className="flex items-center justify-center sm:justify-start gap-4">
                                 <h1 className="text-3xl font-extrabold tracking-tight">{displayName}</h1>
-                                <div className="scale-90 opacity-80 hover:opacity-100 transition-opacity">
+                                <div className="flex ml-auto">
                                     <SyncButton targetUserId={targetUser.id} />
                                 </div>
                             </div>
-                            <p className="text-slate-400 text-sm mt-1">Profil compétitif Lorcana • {allGamesAsc.length} matchs enregistrés</p>
+                            <p className="text-slate-400 text-sm mt-1">Profil Duels.ink • {allGamesAsc.length} matchs enregistrés</p>
 
                             {targetUser.dreambornUrl && (
                                 <a
@@ -148,14 +150,18 @@ export default async function PlayerProfilePage(props: Props) {
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-indigo-500/20 hover:border-indigo-500/50 hover:text-indigo-300 transition-all text-sm font-medium text-slate-300"
                                 >
-                                    <span>📓 Voir les Decks sur Dreamborn</span>
+                                    <StarIcon className="w-4 h-4" />
+                                    <span>Voir les Decks sur Dreamborn</span>
                                 </a>
                             )}
                         </div>
                     </div>
 
                     <div className="mt-6">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-1">📈 Évolution du MMR</h2>
+                        <div className="inline-flex items-center justify-center gap-2 mb-1">
+                            <GraphIcon className="w-4 h-4 text-slate-400" />
+                            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Évolution du MMR</h2>
+                        </div>
                         <MmrChart data={chartData} queues={playerQueues} />
                     </div>
                 </section>
