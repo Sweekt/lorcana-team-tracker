@@ -135,7 +135,7 @@ export default function GameRow({ game }: GameRowProps) {
 
                         <div
                             className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
-                            <h3 className="font-bold text-slate-200">Deck de {game.player.name}</h3>
+                            <h3 className="font-bold text-slate-200">Deck de {game.user.name}</h3>
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={copyToClipboard}

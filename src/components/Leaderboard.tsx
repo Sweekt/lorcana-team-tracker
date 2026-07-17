@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LeaderboardIcon from "@/assets/ic_leaderboard.svg"
 
 const getRankBadge = (index: number) => {
     switch (index) {
@@ -12,7 +13,10 @@ const getRankBadge = (index: number) => {
 export default function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
     return (
         <section>
-            <h2 className="text-xl font-bold text-slate-200 mb-4">Leaderboard</h2>
+            <div className="flex flex-row items-center gap-2 mb-4">
+                <LeaderboardIcon className="w-5 h-5" />
+                <span className="text-xl font-bold text-slate-200">Leaderboard</span>
+            </div>
             <div className="bg-slate-900 rounded-2xl shadow-md border border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse min-w-[500px]">

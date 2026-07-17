@@ -8,6 +8,8 @@ import QueueSelector from "@/components/QueueSelector";
 import SyncButton from "@/components/SyncButton";
 import { getCurrentTeamId } from "@/lib/current-team";
 import Link from "next/link";
+import SettingsIcon from "@/assets/ic_settings.svg"
+import HistoryIcon from "@/assets/ic_history.svg"
 
 async function getAvailableQueues(teamId: string) {
   const team = await prisma.team.findUnique({
@@ -86,10 +88,18 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
 
   return (
       <div className="min-h-screen bg-slate-950 pb-20">
-        <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-12">
+        <main className="max-w-4xl lg:max-w-7xl mx-auto p-6 space-y-8">
 
           {/* Barre d'outils */}
-          <section className="bg-slate-900 p-4 sm:px-6 sm:py-4 rounded-2xl shadow-sm border border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <section className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="w-full sm:w-auto flex gap-3">
+              <SyncButton />
+              {isAdmin && (
+                  <Link href="/team/settings" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm text-slate-300 transition-colors border border-slate-700">
+                    <SettingsIcon className="w-4 h-4" />Gérer l'équipe
+                  </Link>
+              )}
+            </div>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
               <span className="font-semibold text-slate-400 text-sm uppercase tracking-wider">Format</span>
               {queues.length > 0 ? (
@@ -98,14 +108,6 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
                   <span className="text-slate-500 italic text-sm">Aucun format actif</span>
               )}
             </div>
-            <div className="w-full sm:w-auto flex gap-3">
-              {isAdmin && (
-                  <Link href="/team/settings" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded text-sm text-slate-300 transition-colors border border-slate-700">
-                    ⚙️ Gérer l'équipe
-                  </Link>
-              )}
-              <SyncButton />
-            </div>
           </section>
 
           <Leaderboard leaderboard={leaderboard} />
@@ -113,7 +115,10 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
           {/* Historique */}
           <section>
             <div className="mb-4">
-              <h2 className="text-xl font-bold text-slate-200">Historique</h2>
+              <div className="flex flex-row items-center gap-2">
+                <HistoryIcon className="w-5 h-5" />
+                <span className="text-xl font-bold text-slate-200">Historique</span>
+              </div>
               <p className="text-slate-500 text-sm">Les 20 dernières parties de l'équipe dans ce format.</p>
             </div>
             <HistoryTable games={recentGames} />

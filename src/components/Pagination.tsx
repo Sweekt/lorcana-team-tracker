@@ -25,7 +25,7 @@ export default function Pagination({
     };
 
     return (
-        <div className="flex items-center justify-center gap-4 mt-6">
+        <div className="flex items-center justify-end gap-4 mt-6">
             <button
                 onClick={() => changePage(currentPage - 1)}
                 disabled={currentPage <= 1}

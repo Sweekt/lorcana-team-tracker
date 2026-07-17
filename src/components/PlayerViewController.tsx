@@ -14,7 +14,7 @@ export default function PlayerViewController({
     };
 
     return (
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-slate-900 p-3 rounded-xl border border-slate-800">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
 
             {/* Onglets */}
             <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800/80">
