@@ -6,8 +6,10 @@ import { getDeckDetails } from "@/actions/cards";
 import ColorDots from "@/components/ColorDots";
 import Link from "next/link";
 import {toast} from "sonner";
+import CopyIcon from "@/assets/ic_copy.svg"
+import DeckIcon from "@/assets/ic_deck.svg"
+import ReplayIcon from "@/assets/ic_replay.svg"
 
-// Types
 type GameRowProps = {
     game: {
         id: string; result: string; wentFirst: boolean | null;
@@ -112,14 +114,16 @@ export default function GameRow({ game }: GameRowProps) {
                     <div className="flex items-center gap-2 justify-end">
                         {decklist.length > 0 && (
                             <button onClick={handleOpenDeck}
-                                    className="text-xs bg-slate-800 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-400 hover:border-indigo-500/30 border border-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors">
-                                🃏 Deck
+                                    className="flex flex-row gap-1 items-center text-xs bg-slate-800 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-400 hover:border-indigo-500/30 border border-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors">
+                                <DeckIcon className="w-3 h-3" />
+                                <span>Deck</span>
                             </button>
                         )}
                         {game.replayUrl && (
                             <a href={game.replayUrl} target="_blank" rel="noopener noreferrer"
-                               className="text-xs bg-indigo-600 text-white hover:bg-indigo-500 border border-indigo-500 px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm">
-                                ▶️ Replay
+                               className="flex flex-row gap-1 items-center text-xs bg-indigo-600 text-white hover:bg-indigo-500 border border-indigo-500 px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm">
+                                <ReplayIcon className="w-3 h-3" />
+                                <span>Replay</span>
                             </a>
                         )}
                     </div>
@@ -140,9 +144,10 @@ export default function GameRow({ game }: GameRowProps) {
                                 <button
                                     onClick={copyToClipboard}
                                     disabled={isLoading}
-                                    className="text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
+                                    className="flex flex-row gap-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
                                 >
-                                    📋 Copier le deck
+                                    <CopyIcon className="w-4 h-4" />
+                                    <span>Copier le deck</span>
                                 </button>
                                 <button onClick={() => setIsModalOpen(false)}
                                         className="text-slate-500 hover:text-slate-300 text-2xl font-bold leading-none">&times;</button>

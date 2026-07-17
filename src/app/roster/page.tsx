@@ -4,9 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { getCurrentTeamId } from "@/lib/current-team";
 import { redirect } from "next/navigation";
+import LeaderboardIcon from "@/assets/ic_leaderboard.svg"
+import StarIcon from "@/assets/ic_star.svg"
 
 export default async function RosterPage() {
-    // 1. Sécurité et récupération du contexte d'équipe
     const session = await getServerSession(authOptions);
     const teamId = await getCurrentTeamId();
 
@@ -22,11 +23,12 @@ export default async function RosterPage() {
     });
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 pb-20">
-            <main className="max-w-6xl mx-auto p-8 space-y-12">
+        <div className="min-h-[calc(100dvh-65px)] bg-slate-950 text-slate-200 pb-20">
+
+            <main className="max-w-4xl lg:max-w-7xl mx-auto p-6 space-y-8">
 
                 {/* EN-TÊTE */}
-                <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6">
+                <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-indigo-600">
                             Roster de l'Équipe
@@ -59,7 +61,7 @@ export default async function RosterPage() {
                                             <img
                                                 src={user.image}
                                                 alt={displayName}
-                                                className="w-24 h-24 rounded-full object-cover border-4 border-slate-950 shadow-xl group-hover:scale-105 transition-transform"
+                                                className="w-24 h-24 rounded-full object-cover border-4 border-slate-500 shadow-xl group-hover:scale-105 transition-transform"
                                             />
                                         ) : (
                                             <div className="w-24 h-24 rounded-full bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-4xl font-black text-indigo-100 border-4 border-slate-950 shadow-xl group-hover:scale-105 transition-transform">
@@ -76,9 +78,10 @@ export default async function RosterPage() {
                                         {/* Lien vers les stats (Page Profil) */}
                                         <Link
                                             href={`/player/${linkName}`}
-                                            className="w-full bg-indigo-600 text-white font-medium text-sm py-2.5 rounded-lg hover:bg-indigo-500 transition-colors shadow-sm"
+                                            className="flex items-center justify-center gap-2 w-full bg-indigo-600 text-white font-medium text-sm py-2.5 rounded-lg hover:bg-indigo-500 transition-colors shadow-sm"
                                         >
-                                            📊 Voir les Stats
+                                            <LeaderboardIcon className="w-4 h-4" />
+                                            <span>Voir les Stats</span>
                                         </Link>
 
                                         {/* Lien Dreamborn conditionnel */}
@@ -87,9 +90,10 @@ export default async function RosterPage() {
                                                 href={user.dreambornUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="w-full bg-slate-950 border border-slate-800 text-slate-300 font-medium text-sm py-2.5 rounded-lg hover:bg-slate-800 hover:text-indigo-300 hover:border-indigo-500/30 transition-all flex items-center justify-center gap-2"
+                                                className="flex items-center justify-center gap-2 w-full bg-slate-950 border border-slate-800 text-slate-300 font-medium text-sm py-2.5 rounded-lg hover:bg-slate-800 hover:text-indigo-300 hover:border-indigo-500/30 transition-all"
                                             >
-                                                📓 Dreamborn
+                                                <StarIcon className="w-4 h-4" />
+                                                <span>Dreamborn</span>
                                             </a>
                                         ) : (
                                             <span className="w-full bg-slate-950/50 border border-slate-800/50 text-slate-600 font-medium text-sm py-2.5 rounded-lg cursor-not-allowed">

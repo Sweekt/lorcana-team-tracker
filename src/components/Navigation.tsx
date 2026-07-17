@@ -25,7 +25,7 @@ export default function Navigation() {
 
     return (
         <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-slate-950/80 border-b border-slate-800 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 
                 {/* GAUCHE : Logo */}
                 <Link href="/" className="text-xl font-black text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-indigo-600 hover:opacity-80 transition-opacity">
