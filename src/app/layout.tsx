@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="fr">
-        <body className="bg-slate-950 text-slate-200 min-h-screen flex flex-col">
+        <body className="bg-slate-950 text-slate-200 min-h-dvh">
             <AuthProvider>
                 <Navigation/>
 

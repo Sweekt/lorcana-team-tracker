@@ -32,7 +32,7 @@ export default function ProfileForm({ user }: { user: UserProps }) {
         <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm space-y-6">
             <div>
                 <label htmlFor="lorcanaApiKey" className="block text-sm font-medium text-slate-300 mb-2">
-                    Clé API (Duels.ink / Lorcana)
+                    Clé API Duels.ink
                 </label>
                 <input
                     type="password"

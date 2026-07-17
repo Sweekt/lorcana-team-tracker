@@ -60,10 +60,11 @@ export default async function HomePage() {
     if (!team) redirect("/onboarding");
 
     return (
-        <div className="min-h-dvh bg-slate-950 pb-20 p-4 sm:p-8 relative overflow-hidden">
-            <div className="absolute top-20 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="min-h-[calc(100dvh-65px)] flex flex-col justify-center w-full bg-slate-950 p-4 sm:p-8 relative overflow-hidden">
 
-            <main className="max-w-4xl mx-auto flex flex-col items-center mt-12 sm:mt-20 relative z-10 space-y-4">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+            <main className="max-w-4xl mx-auto flex flex-col items-center relative z-10 space-y-4 w-full">
 
                 <div className="flex flex-col items-center text-center">
 
@@ -95,9 +96,8 @@ export default async function HomePage() {
                     </div>
                 </div>
 
-                {/* 2. LIENS DE NAVIGATION PRINCIPAUX */}
+                {/* LIENS DE NAVIGATION PRINCIPAUX */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl mt-2">
-                    {/* Bouton Leaderboard */}
                     <Link href="/leaderboard" className="group flex items-center gap-4 bg-indigo-500/10 border border-indigo-500/20 group-hover:bg-indigo-500/20 shadow-lg hover:shadow-indigo-500/20 p-4 sm:p-5 rounded-2xl transition-all">
                         <LeaderboardIcon className="text-indigo-400 w-6 h-6 group-hover:scale-110 transition-transform" />
                         <div className="text-left">
@@ -105,7 +105,7 @@ export default async function HomePage() {
                             <p className="text-slate-400 text-xs sm:text-sm mt-1">Classement et historique</p>
                         </div>
                     </Link>
-                    {/* Bouton Roster */}
+
                     <Link href="/roster" className="group flex items-center gap-4 bg-violet-500/10 border border-violet-500/20 group-hover:bg-violet-500/20 shadow-lg hover:shadow-violet-500/20 p-4 sm:p-5 rounded-2xl transition-all">
                         <RosterIcon className="text-violet-400 w-6 h-6 group-hover:scale-110 transition-transform" />
                         <div className="text-left">
