@@ -6,8 +6,8 @@ import AuthProvider from "@/components/AuthProvider";
 import Footer from "@/components/Footer";
 
 export const metadata : Metadata = {
-  title: "Lorcana Team Tracker",
-  description: "Suivez le classement et l'historique de l'équipe",
+  title: "LoreTracker",
+  description: "Suivez le classement et l'historique de votre équipe sur Duels.ink",
 };
 
 export default function RootLayout({
