@@ -12,10 +12,17 @@ import ReplayIcon from "@/assets/ic_replay.svg"
 
 type GameRowProps = {
     game: {
-        id: string; result: string; wentFirst: boolean | null;
-        myDeckColors: string | null; oppDeckColors: string | null;
-        oppDisplayName: string; replayUrl: string | null;
-        yourDecklist: string | null; startedAt: Date;
+        id: string;
+        result: string;
+        mmrDelta: number;
+        wentFirst: boolean | null;
+        myDeckColors: string | null;
+        mmrBefore: number;
+        oppDeckColors: string | null;
+        oppDisplayName: string;
+        replayUrl: string | null;
+        yourDecklist: string | null;
+        startedAt: Date;
         user: { name: string };
     };
 };
@@ -62,10 +69,10 @@ export default function GameRow({ game }: GameRowProps) {
 
                 {/* Résultat */}
                 <td className="py-3 px-4">
-          <span
-              className={`px-2.5 py-1 rounded-md text-xs font-bold border ${isWin ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>
-            {isWin ? "VICTOIRE" : "DÉFAITE"}
-          </span>
+                  <span
+                      className={`whitespace-nowrap px-2.5 py-1 rounded-md text-xs font-bold border ${isWin ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>
+                    {isWin ? "WIN (+" : "LOSS ("}{game.mmrDelta})
+                  </span>
                 </td>
 
                 {/* OTP / OTD */}
@@ -93,6 +100,7 @@ export default function GameRow({ game }: GameRowProps) {
                     >
                         {game.user?.name.charAt(0).toUpperCase() + game.user?.name.slice(1)}
                     </Link>
+                    <span> ({game.mmrBefore})</span>
                 </td>
 
                 {/* Matchup (Pastilles) */}
