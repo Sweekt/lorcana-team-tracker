@@ -25,7 +25,7 @@ export default async function RosterPage() {
     return (
         <div className="min-h-[calc(100dvh-65px)] bg-slate-950 text-slate-200 pb-20">
 
-            <main className="max-w-4xl lg:max-w-7xl mx-auto p-6 space-y-8">
+            <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-8">
 
                 {/* EN-TÊTE */}
                 <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

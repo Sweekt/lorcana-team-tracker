@@ -41,7 +41,7 @@ export default async function TeamSettingsPage() {
     const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${team.inviteToken}`;
 
     return (
-        <div className="min-h-screen bg-slate-950 pb-20 p-4 sm:p-8">
+        <div className="min-h-screen bg-slate-950 pb-4 p-8">
             <main className="max-w-3xl mx-auto space-y-8 mt-8">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-200">Gestion de l'équipe : {team.name}</h1>

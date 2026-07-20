@@ -116,8 +116,8 @@ export default async function PlayerProfilePage(props: Props) {
     const displayName = targetUser.name ? targetUser.name.charAt(0).toUpperCase() + targetUser.name.slice(1) : "Joueur Inconnu";
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
-            <main className="max-w-4xl lg:max-w-7xl mx-auto p-6 space-y-8">
+        <div className="min-h-screen bg-slate-950 text-slate-100 pb-4">
+            <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-8">
                 <section className="bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-md">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-slate-800/80 pb-8">
                         {targetUser.image ? (

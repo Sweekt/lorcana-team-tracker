@@ -87,8 +87,8 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
   const recentGames = currentQueue ? await getRecentHistory(currentQueue, teamId) : [];
 
   return (
-      <div className="min-h-screen bg-slate-950 pb-6">
-        <main className="max-w-4xl lg:max-w-7xl mx-auto p-6 space-y-8">
+      <div className="min-h-screen bg-slate-950 pb-4">
+        <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-8">
 
           {/* Barre d'outils */}
           <section className="flex flex-col sm:flex-row justify-between items-center gap-4">

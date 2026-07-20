@@ -42,7 +42,7 @@ export default function OnboardingForm({ userId, userName }: Props) {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 relative overflow-hidden">
             {/* Décorations de fond */}
             <div className="absolute top-0 w-full h-1/2 bg-linear-to-b from-indigo-900/20 to-transparent pointer-events-none"></div>
             <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-violet-600/10 rounded-full blur-[120px] pointer-events-none"></div>
