@@ -8,19 +8,18 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5432:5432"
+    # Port retiré par sécurité, le réseau interne suffit !
     volumes:
       - lorcana-db-data:/var/lib/postgresql/data
     networks:
-      - lorcana-internal # La DB ne communique que sur le réseau interne
+      - lorcana-internal
 
   # --- LORCANA TEAM TRACKER ---
   team-tracker:
     build: .
     container_name: loretracker
     depends_on:
-      - db # S'assure que la DB démarre avant l'application
+      - db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tracker.rule=Host(`loretracker.fr`) || Host(`www.loretracker.fr`)"
@@ -29,8 +28,8 @@ services:
       - "traefik.http.services.tracker.loadbalancer.server.port=3000"
       - "traefik.docker.network=portfolio_app-network"
     networks:
-      - lorcana-internal # Pour discuter avec la DB
-      - traefik-net      # Pour être exposé sur internet par Traefik
+      - lorcana-internal
+      - traefik-net
     restart: always
     env_file:
       - .env
@@ -39,11 +38,8 @@ volumes:
   lorcana-db-data:
 
 networks:
-  # Réseau privé interne (créé automatiquement pour la DB et l'App)
   lorcana-internal:
     driver: bridge
-
-  # Réseau externe de Traefik (Portfolio)
   traefik-net:
     external: true
     name: portfolio_app-network
