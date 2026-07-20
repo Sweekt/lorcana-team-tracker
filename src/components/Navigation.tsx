@@ -11,8 +11,6 @@ export default function Navigation() {
     const pathname = usePathname();
     const { data: session } = useSession();
 
-    // Si l'utilisateur n'est pas connecté, la Landing Page prend le relais
-    // On n'affiche donc pas la barre de navigation pour éviter de polluer le design
     if (!session) {
         return null;
     }
