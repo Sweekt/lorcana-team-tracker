@@ -174,7 +174,7 @@ export default function GameRow({ game }: GameRowProps) {
                                     {deckDetails.map((card, idx) => (
                                         <div key={idx} className="flex flex-col items-center group relative">
                                             <div
-                                                className="relative w-full aspect-[2.5/3.5] bg-slate-800 rounded-lg border border-slate-700 overflow-hidden shadow-sm">
+                                                className="relative w-full aspect-2.5/3.5 bg-slate-800 rounded-lg border border-slate-700 overflow-hidden shadow-sm">
                                                 {card.imageUrl ? (
                                                     <img src={card.imageUrl} alt={card.name}
                                                          className="object-cover w-full h-full"/>
