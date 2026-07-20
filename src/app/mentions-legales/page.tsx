@@ -1,7 +1,7 @@
 export default function MentionsLegalesPage() {
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 py-8 px-4 sm:px-8">
-            <main className="max-w-3xl mx-auto space-y-8">
+        <div className="flex-1 flex flex-col justify-center bg-slate-950 text-slate-200 py-8 px-4 sm:px-8">
+            <main className="max-w-7xl w-full mx-auto space-y-8">
                 <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-indigo-600 mb-8">
                     Mentions Légales
                 </h1>
@@ -11,7 +11,7 @@ export default function MentionsLegalesPage() {
                     <div>
                         <h2 className="text-xl font-bold text-slate-100 mb-2">1. Éditeur du site</h2>
                         <p className="text-slate-400 text-sm leading-relaxed">
-                            Le site Lorcana Team Tracker est un projet personnel et gratuit, édité par Benjamin Roy (alias Sweek).<br />
+                            Le site LoreTracker est un projet personnel et gratuit, édité par Benjamin Roy (alias Sweek).<br />
                             Pour toute question ou demande, vous pouvez contacter l'éditeur via les réseaux sociaux ou la plateforme de code source du projet.
                         </p>
                     </div>

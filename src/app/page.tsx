@@ -14,13 +14,13 @@ export default async function HomePage() {
 
     if (!session?.user) {
         return (
-            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="flex-1 flex flex-col justify-center w-full bg-slate-950 items-center relative overflow-hidden">
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none"></div>
                 <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
                 <div className="relative z-10 text-center max-w-4xl px-6">
                     <span className="text-indigo-400 font-bold tracking-wider uppercase text-sm mb-6 block border border-indigo-500/30 bg-indigo-500/10 py-2 px-4 rounded-full w-fit mx-auto">
-                        Lorcana Team Tracker
+                        LoreTracker
                     </span>
                     <h1 className="text-5xl sm:text-7xl font-extrabold text-white mb-8 tracking-tight">
                         Dominez la <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-violet-400">compétition</span>

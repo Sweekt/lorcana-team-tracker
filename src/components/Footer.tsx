@@ -5,7 +5,7 @@ export default function Footer() {
         <footer className="border-t border-slate-800/60 bg-slate-950/50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
 
-                <div className="text-slate-500 text-sm flex items-center gap-2">
+                <div className="text-slate-500 text-sm flex items-center gap-1">
                     by
                     <a
                         href="https://github.com/Sweekt"
