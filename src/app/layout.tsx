@@ -17,28 +17,30 @@ export default function RootLayout({
 }) {
     return (
         <html lang="fr">
-        <body className="bg-slate-950 text-slate-200 min-h-dvh">
-        <AuthProvider>
-            <Navigation/>
+            <body className="flex flex-col min-h-dvh bg-slate-950 text-slate-200">
+            <AuthProvider>
+                <Navigation/>
 
-            {children}
+                <main className="flex-1 flex flex-col w-full">
+                    {children}
+                </main>
 
-            <Footer/>
+                <Footer/>
 
-            <Toaster
-                theme="dark"
-                position="bottom-right"
-                richColors
-                toastOptions={{
-                    style: {
-                        background: '#0f172a',
-                        borderColor: '#1e293b',
-                        color: '#e2e8f0',
-                    }
-                }}
-            />
-        </AuthProvider>
-        </body>
+                <Toaster
+                    theme="dark"
+                    position="bottom-right"
+                    richColors
+                    toastOptions={{
+                        style: {
+                            background: '#0f172a',
+                            borderColor: '#1e293b',
+                            color: '#e2e8f0',
+                        }
+                    }}
+                />
+                </AuthProvider>
+            </body>
         </html>
     );
 };

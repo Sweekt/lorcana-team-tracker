@@ -60,7 +60,7 @@ export default async function HomePage() {
     if (!team) redirect("/onboarding");
 
     return (
-        <div className="min-h-[calc(100dvh-65px)] flex flex-col justify-center w-full bg-slate-950 p-4 sm:p-8 relative overflow-hidden">
+        <div className="flex-1 flex flex-col justify-center w-full bg-slate-950 p-4 sm:p-8 relative overflow-hidden">
 
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
