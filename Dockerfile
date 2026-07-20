@@ -1,6 +1,9 @@
 # Utilise une image Node légère
 FROM node:20-alpine
 
+# Installe les dépendances système requises pour compiler node-gyp
+RUN apk add --no-cache python3 make g++
+
 # Crée le dossier de l'app
 WORKDIR /app
 
