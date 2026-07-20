@@ -122,7 +122,7 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
                 <h2 className="text-lg font-bold text-slate-200 mb-4">Membres de l'équipe</h2>
                 <div className="space-y-3">
                     {team.members.map((member: any) => (
-                        <div key={member.userId} className={`flex items-center justify-between p-3 bg-slate-950 rounded-lg border ${member.user.lorcanaApiKey ? `border-red-500` : `border-slate-800/50`}`}>
+                        <div key={member.userId} className={`flex items-center justify-between p-3 bg-slate-950 rounded-lg border ${member.user.lorcanaApiKey ? `border-slate-800/50` : `border-red-500`}`}>
                             <div className="flex items-center gap-3">
                                 <img src={member.user.image || ""} alt="" className="w-8 h-8 rounded-full border border-slate-700" />
                                 <div>
