@@ -89,7 +89,7 @@ export default async function PlayerProfilePage(props: Props) {
     if (currentTab === "stats") {
         const allStatsGames = await prisma.game.findMany({
             where: whereClause,
-            select: { result: true, wentFirst: true, myDeckColors: true }
+            select: { result: true, wentFirst: true, myDeckColors: true, oppDeckColors: true }
         });
         tabContent = <PlayerStatsView games={allStatsGames} />;
     }
