@@ -24,7 +24,7 @@ export default async function TeamSettingsPage() {
         where: { id: teamId },
         include: {
             members: {
-                include: { user: { select: { id: true, name: true, image: true } } },
+                include: { user: { select: { id: true, name: true, image: true, lorcanaApiKey: true } } },
                 orderBy: { role: "asc" } // ADMIN en premier
             }
         }
@@ -38,7 +38,7 @@ export default async function TeamSettingsPage() {
     }
 
     // On construit le lien d'invitation complet
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${team.inviteToken}`;
+    const inviteLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/invite/${team.inviteToken}`;
 
     return (
         <div className="min-h-screen bg-slate-950 pb-4 p-8">
