@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import JoinButton from "./JoinButton";
+import JoinButton from "@/components/JoinButton";
 
 export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params;
@@ -34,7 +34,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
     return (
         <div className="min-h-[50vh] flex items-center justify-center">
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-xl max-w-md w-full text-center">
-                <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600 mb-2">
+                <h1 className="text-2xl font-black text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-indigo-600 mb-2">
                     Invitation reçue !
                 </h1>
                 <p className="text-slate-300 mb-6">
