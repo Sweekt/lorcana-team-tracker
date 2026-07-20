@@ -1,4 +1,5 @@
 services:
+  # --- BASE DE DONNÉES POSTGRESQL ---
   db:
     image: postgres:16-alpine
     container_name: lorcana-db
@@ -11,6 +12,37 @@ services:
       - "5432:5432"
     volumes:
       - lorcana-db-data:/var/lib/postgresql/data
+    networks:
+      - lorcana-internal # La DB ne communique que sur le réseau interne
+
+  # --- LORCANA TEAM TRACKER ---
+  team-tracker:
+    build: .
+    container_name: loretracker
+    depends_on:
+      - db # S'assure que la DB démarre avant l'application
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tracker.rule=Host(`loretracker.fr`) || Host(`www.loretracker.fr`)"
+      - "traefik.http.routers.tracker.entrypoints=websecure"
+      - "traefik.http.routers.tracker.tls.certresolver=myresolver"
+      - "traefik.http.services.tracker.loadbalancer.server.port=3000"
+    networks:
+      - lorcana-internal # Pour discuter avec la DB
+      - traefik-net      # Pour être exposé sur internet par Traefik
+    restart: always
+    env_file:
+      - .env
 
 volumes:
   lorcana-db-data:
+
+networks:
+  # Réseau privé interne (créé automatiquement pour la DB et l'App)
+  lorcana-internal:
+    driver: bridge
+
+  # Réseau externe de Traefik (Portfolio)
+  traefik-net:
+    external: true
+    name: portfolio_app-network
