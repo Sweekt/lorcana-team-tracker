@@ -12,13 +12,14 @@ export default function QueueSelector({
     playerName?: string;
 }) {
     const router = useRouter();
+    const playerPageRoute = 'player/' + playerName;
 
     return (
         <div className="relative">
             <select
                 value={currentQueue}
                 onChange={(e) => {
-                    router.push(`/${playerName !== "" ? playerName : 'leaderboard'}?queue=${e.target.value}`);
+                    router.push(`/${playerName ? playerPageRoute : 'leaderboard'}?queue=${e.target.value}`);
                 }}
                 className="w-full sm:w-36 bg-slate-900 border text-xs border-slate-700 text-slate-200 py-2.5 pl-4 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer font-medium appearance-none"
             >
