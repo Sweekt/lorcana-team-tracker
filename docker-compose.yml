@@ -29,7 +29,7 @@ services:
       - "traefik.docker.network=portfolio_app-network"
     networks:
       - lorcana-internal
-      - traefik-net
+      - portfolio_app-network
     restart: always
     env_file:
       - .env
@@ -40,6 +40,5 @@ volumes:
 networks:
   lorcana-internal:
     driver: bridge
-  traefik-net:
+  portfolio_app-network:
     external: true
-    name: portfolio_app-network

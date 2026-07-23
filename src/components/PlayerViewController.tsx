@@ -44,7 +44,7 @@ export default function PlayerViewController({
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                 <span className="font-semibold text-slate-400 text-xs uppercase tracking-wider">Format</span>
                 {queues.length > 0 ? (
-                    <QueueSelector queues={queues} currentQueue={currentQueue} />
+                    <QueueSelector queues={queues} currentQueue={currentQueue} playerName={playerName} />
                 ) : (
                     <span className="text-slate-500 italic text-xs">Aucun format actif</span>
                 )}
