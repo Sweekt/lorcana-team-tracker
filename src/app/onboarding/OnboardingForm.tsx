@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createTeam, joinTeam } from "@/actions/team";
+import { joinTeam } from "@/actions/team";
 import { toast } from "sonner";
+import CreateTeamForm from "@/components/CreateTeamForm"; // Assure-toi du bon chemin
 
 type Props = {
     userId: string;
@@ -14,29 +15,19 @@ export default function OnboardingForm({ userId, userName }: Props) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setIsLoading(true);
-        const formData = new FormData(e.currentTarget);
-        const result = await createTeam(formData, userId);
-        handleResult(result, "Équipe créée avec succès !");
-    };
-
     const handleJoin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         const formData = new FormData(e.currentTarget);
         const token = formData.get("token") as string;
-        const result = await joinTeam(token, userId);
-        handleResult(result, "Équipe rejointe avec succès !");
-    };
 
-    const handleResult = (result: any, successMessage: string) => {
+        const result = await joinTeam(token, userId);
+
         if (result.error) {
             toast.error(result.error);
             setIsLoading(false);
         } else {
-            toast.success(successMessage);
+            toast.success("Équipe rejointe avec succès !");
             router.push("/");
         }
     };
@@ -62,28 +53,13 @@ export default function OnboardingForm({ userId, userName }: Props) {
                     </p>
                 </div>
 
-                {/* Formulaire de création */}
-                <form onSubmit={handleCreate} className="space-y-4 mb-8 bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80">
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                            Créer une nouvelle équipe
-                        </label>
-                        <input
-                            type="text"
-                            name="name"
-                            required
-                            placeholder="Nom de l'équipe"
-                            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full py-3 rounded-xl font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50 shadow-sm shadow-indigo-600/20"
-                    >
-                        {isLoading ? "Création..." : "Créer mon équipe"}
-                    </button>
-                </form>
+                {/* Le Formulaire de création extrait */}
+                <div className="mb-8 bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80">
+                    <CreateTeamForm
+                        userId={userId}
+                        onSuccess={() => router.push("/")}
+                    />
+                </div>
 
                 <div className="relative flex py-2 items-center mb-8">
                     <div className="grow border-t border-slate-800"></div>

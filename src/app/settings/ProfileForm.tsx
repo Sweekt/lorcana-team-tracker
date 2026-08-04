@@ -5,6 +5,7 @@ import { leaveTeamAction } from "@/actions/team";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import CreateTeamForm from "@/components/CreateTeamForm";
 
 type TeamMembership = {
     teamId: string;
@@ -27,6 +28,7 @@ export default function ProfileForm({ user }: { user: UserProps }) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [isPending, startTransition] = useTransition();
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -109,6 +111,12 @@ export default function ProfileForm({ user }: { user: UserProps }) {
             {/* BLOC 2 : GESTION DES ÉQUIPES */}
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-sm space-y-6">
                 <h2 className="text-xl font-bold text-slate-100">Mes Équipes</h2>
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="text-sm bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 px-3 py-1.5 rounded-md font-medium transition-colors"
+                >
+                    + Créer une équipe
+                </button>
 
                 {user.memberships.length === 0 ? (
                     <p className="text-slate-400 text-sm">Vous ne faites partie d'aucune équipe pour le moment.</p>
@@ -125,7 +133,7 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                                         <span className={`px-2 py-0.5 rounded-full font-medium ${
                                             membership.role === 'ADMIN' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-400'
                                         }`}>
-                                            {membership.role === 'ADMIN' ? 'Administrateur' : 'Membre'}
+                                            {membership.role === 'ADMIN' ? 'Capitaine' : 'Membre'}
                                         </span>
                                         <span className="text-slate-500">
                                             {membership.team._count.members} membre{membership.team._count.members > 1 ? 's' : ''}
@@ -145,6 +153,38 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                     </div>
                 )}
             </div>
+
+            {/* MODALE DE CRÉATION D'ÉQUIPE */}
+            {isCreateModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+                    <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+
+                        {/* En-tête de la modale */}
+                        <div className="flex items-center justify-between p-4 border-b border-slate-800">
+                            <h3 className="font-bold text-slate-100">Nouvelle équipe</h3>
+                            <button
+                                onClick={() => setIsCreateModalOpen(false)}
+                                className="text-slate-400 hover:text-slate-200 transition-colors"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Corps de la modale (Ton composant extrait) */}
+                        <div className="p-6">
+                            <CreateTeamForm
+                                onSuccess={() => {
+                                    setIsCreateModalOpen(false);
+                                    // Optionnel : router.refresh() pour mettre à jour la liste des équipes
+                                }}
+                            />
+                        </div>
+
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
