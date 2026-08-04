@@ -9,10 +9,20 @@ export async function getCurrentTeamId() {
         return null;
     }
 
-    const userTeam = await prisma.teamMember.findFirst({
-        where: { userId: session.user.id },
-        select: { teamId: true }
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+            activeTeamId: true,
+            teams: {
+                take: 1,
+                select: { teamId: true }
+            }
+        }
     });
 
-    return userTeam?.teamId || null;
+    if (!user) {
+        return null;
+    }
+
+    return user.activeTeamId || user.teams[0]?.teamId || null;
 }

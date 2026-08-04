@@ -12,10 +12,19 @@ export default async function SettingsPage() {
     }
 
     const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
-        select: {
-            lorcanaApiKey: true,
-            dreambornUrl: true,
+        where: { id: session.user.id },
+        include: {
+            memberships: {
+                include: {
+                    team: {
+                        include: {
+                            _count: {
+                                select: { members: true }
+                            }
+                        }
+                    }
+                }
+            }
         }
     });
 

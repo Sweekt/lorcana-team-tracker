@@ -20,11 +20,12 @@ model User {
   lorcanaApiKey String?
   dreambornUrl  String?
 
-  accounts      Account[]
-  sessions      Session[]
-  teams         TeamMember[]
-  games         Game[]
-  queueStats    UserQueueStat[]
+  accounts     Account[]
+  sessions     Session[]
+  teams        TeamMember[]
+  activeTeamId String?
+  games        Game[]
+  queueStats   UserQueueStat[]
 }
 
 model Account {
@@ -42,6 +43,7 @@ model Account {
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
 }
 
@@ -58,26 +60,26 @@ model Session {
 // ------------------------------------------------------
 
 model Team {
-  id          String   @id @default(cuid())
-  name        String
-  logoUrl     String?
-  inviteToken String   @unique @default(uuid())
-  createdAt   DateTime @default(now())
-  activeQueues  String[]     @default(["core-bo1"])
-  members     TeamMember[]
-  games       Game[]
+  id           String       @id @default(cuid())
+  name         String
+  logoUrl      String?
+  inviteToken  String       @unique @default(uuid())
+  createdAt    DateTime     @default(now())
+  activeQueues String[]     @default(["core-bo1"])
+  members      TeamMember[]
+  games        Game[]
 }
 
 // Table de liaison entre Utilisateur et Équipe avec un Rôle
 model TeamMember {
-  id        String   @id @default(cuid())
-  userId    String
-  teamId    String
-  role      Role     @default(MEMBER)
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  userId   String
+  teamId   String
+  role     Role     @default(MEMBER)
+  joinedAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([userId, teamId])
   @@index([teamId])
@@ -110,33 +112,33 @@ model Game {
   mmrAfter       Float?
   mmrDelta       Float?
 
-  userId         String
-  teamId         String
+  userId String
+  teamId String
 
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team           Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@index([teamId])
   @@index([userId])
 }
 
 model Card {
-  id        String   @id
-  name      String
-  imageUrl  String
-  type      String?
-  cost      Int?
-  lastUsed  DateTime @default(now())
+  id       String   @id
+  name     String
+  imageUrl String
+  type     String?
+  cost     Int?
+  lastUsed DateTime @default(now())
 }
 
 model UserQueueStat {
-  id          String   @id @default(cuid())
-  queueId     String   // "core-bo1", "draft", etc.
-  mmr         Int      @default(1000)
-  gamesPlayed Int      @default(0)
+  id          String @id @default(cuid())
+  queueId     String // "core-bo1", "draft", etc.
+  mmr         Int    @default(1000)
+  gamesPlayed Int    @default(0)
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, queueId])
   @@index([userId])
