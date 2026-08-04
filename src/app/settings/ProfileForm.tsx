@@ -1,7 +1,7 @@
 "use client";
 
 import { updateUserProfile } from "@/actions/user";
-import { leaveTeamAction } from "@/actions/teamActions";
+import { leaveTeamAction } from "@/actions/team";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

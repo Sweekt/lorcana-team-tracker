@@ -7,7 +7,7 @@ import LeaderboardIcon from "@/assets/ic_leaderboard.svg";
 import RosterIcon from "@/assets/ic_roster.svg";
 import AdminIcon from "@/assets/ic_admin.svg";
 import { signOut, useSession } from "next-auth/react";
-import { switchTeamAction } from "@/actions/teamActions";
+import { switchTeamAction } from "@/actions/team";
 
 type Team = { id: string; name: string };
 interface NavigationProps {

@@ -144,3 +144,110 @@ export async function updateTeamLogo(teamId: string, formData: FormData) {
         return { error: "Erreur lors de la mise à jour du logo." };
     }
 }
+
+export async function switchTeamAction(userId: string, targetTeamId: string) {
+    if (!userId || !targetTeamId) return;
+
+    await prisma.user.update({
+        where: { id: userId },
+        data: { activeTeamId: targetTeamId }
+    });
+}
+
+export async function leaveTeamAction(userId: string, teamId: string) {
+    try {
+        // 1. On récupère le rôle de l'utilisateur qui veut partir
+        const membership = await prisma.teamMember.findUnique({
+            where: { userId_teamId: { userId, teamId } }
+        });
+
+        if (!membership) {
+            return { error: "Vous ne faites pas partie de cette équipe." };
+        }
+
+        // 2. LA SÉCURITÉ : S'il est admin, on compte les autres admins
+        if (membership.role === 'ADMIN') {
+            const adminCount = await prisma.teamMember.count({
+                where: {
+                    teamId: teamId,
+                    role: 'ADMIN'
+                }
+            });
+
+            // S'il est le seul admin, on bloque l'action
+            if (adminCount <= 1) {
+                return {
+                    error: "Impossible de quitter : vous êtes le dernier administrateur. Veuillez nommer un autre membre administrateur ou supprimer l'équipe."
+                };
+            }
+        }
+
+        // 3. S'il n'est pas le dernier admin, on procède à la suppression
+        await prisma.teamMember.delete({
+            where: { userId_teamId: { userId, teamId } }
+        });
+
+        // 4. Mise à jour de l'équipe active (comme vu précédemment)
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { activeTeamId: true }
+        });
+
+        if (user?.activeTeamId === teamId) {
+            const remainingTeam = await prisma.teamMember.findFirst({
+                where: { userId }
+            });
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: { activeTeamId: remainingTeam ? remainingTeam.teamId : null }
+            });
+        }
+
+        revalidatePath('/', 'layout');
+        return { success: true };
+
+    } catch (error) {
+        console.error(error);
+        return { error: "Une erreur est survenue lors de la tentative de départ de l'équipe." };
+    }
+}
+
+export async function transferCaptaincy(targetUserId: string, teamId: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return { error: "Non autorisé" };
+
+    const currentUserId = session.user.id;
+
+    // 1. Vérifier que l'utilisateur actuel est bien l'ADMIN de l'équipe
+    const currentMembership = await prisma.teamMember.findUnique({
+        where: { userId_teamId: { userId: currentUserId, teamId } }
+    });
+
+    if (currentMembership?.role !== 'ADMIN') {
+        return { error: "Seul un administrateur peut transférer le capitanat." };
+    }
+
+    try {
+        // 2. Transaction pour garantir l'intégrité de la base de données
+        await prisma.$transaction([
+            // Rétrograder le capitaine actuel
+            prisma.teamMember.update({
+                where: { userId_teamId: { userId: currentUserId, teamId } },
+                data: { role: 'MEMBER' }
+            }),
+            // Promouvoir le nouveau capitaine
+            prisma.teamMember.update({
+                where: { userId_teamId: { userId: targetUserId, teamId } },
+                data: { role: 'ADMIN' }
+            })
+        ]);
+
+        // Rafraîchit la page des paramètres (ajuste le chemin selon ton routing)
+        revalidatePath('/settings');
+        return { success: true };
+    } catch (error) {
+        console.error("Erreur lors du transfert :", error);
+        return { error: "Une erreur est survenue lors du transfert de capitanat." };
+    }
+}

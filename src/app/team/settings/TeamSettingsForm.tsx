@@ -1,6 +1,6 @@
 "use client";
 
-import { kickMember, updateTeamQueues, updateTeamLogo } from "@/actions/team";
+import { kickMember, updateTeamQueues, updateTeamLogo, transferCaptaincy } from "@/actions/team";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -53,6 +53,15 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
         else toast.success(`${userName} a été expulsé.`);
     };
 
+    // NOUVELLE FONCTION : Transfert de capitanat
+    const handleTransfer = async (userId: string, userName: string) => {
+        if (!confirm(`Voulez-vous vraiment céder votre rôle de capitaine à ${userName} ? Vous deviendrez un simple membre et perdrez l'accès à ces paramètres.`)) return;
+
+        const result = await transferCaptaincy(userId, team.id);
+        if (result.error) toast.error(result.error);
+        else toast.success(`${userName} est maintenant le capitaine !`);
+    };
+
     const handleSaveQueues = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSaving(true);
@@ -67,12 +76,10 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
 
     return (
         <div className="space-y-8">
-            {/* SECTION LOGO D'ÉQUIPE */}
+            {/* ... SECTIONS LOGO ET LIEN D'INVITATION (inchangées) ... */}
             <section className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-lg font-bold text-slate-200 mb-4">Logo de l'équipe</h2>
-
                 <form onSubmit={handleSaveLogo} className="flex flex-col sm:flex-row items-center gap-6">
-                    {/* Prévisualisation */}
                     <div className="shrink-0">
                         {logoPreview ? (
                             <img src={logoPreview} alt="Logo preview" className="w-24 h-24 rounded-xl object-cover border border-slate-700 shadow-inner" />
@@ -82,7 +89,6 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
                             </div>
                         )}
                     </div>
-
                     <div className="flex-1 space-y-3 w-full">
                         <input
                             type="file"
@@ -91,7 +97,6 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
                             className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20 file:cursor-pointer file:transition-colors"
                         />
                         <p className="text-xs text-slate-500">Formats acceptés : JPG, PNG, WEBP. Taille maximale : 1 Mo.</p>
-
                         <button
                             type="submit"
                             disabled={isUploadingLogo || !logoPreview || logoPreview === team.logoUrl}
@@ -118,6 +123,7 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
                 </div>
             </section>
 
+            {/* SECTION MEMBRES MISE À JOUR */}
             <section className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-lg font-bold text-slate-200 mb-4">Membres de l'équipe</h2>
                 <div className="space-y-3">
@@ -132,22 +138,32 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
                             </div>
 
                             {member.role !== "ADMIN" && (
-                                <button
-                                    onClick={() => handleKick(member.userId, member.user.name)}
-                                    className="text-xs text-red-400 hover:text-red-300 font-medium px-3 py-1 rounded bg-red-400/10 hover:bg-red-400/20 transition-colors"
-                                >
-                                    Expulser
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleTransfer(member.userId, member.user.name)}
+                                        className="text-xs text-indigo-400 hover:text-indigo-300 font-medium px-3 py-1.5 rounded bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors"
+                                    >
+                                        Nommer Capitaine
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleKick(member.userId, member.user.name)}
+                                        className="text-xs text-red-400 hover:text-red-300 font-medium px-3 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 transition-colors"
+                                    >
+                                        Expulser
+                                    </button>
+                                </div>
                             )}
                         </div>
                     ))}
                 </div>
             </section>
 
+            {/* ... SECTION FORMATS (inchangée) ... */}
             <section className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-lg font-bold text-slate-200 mb-2">Formats autorisés</h2>
                 <p className="text-sm text-slate-500 mb-4">Sélectionnez les files d'attente qui s'afficheront sur le tableau de bord de votre équipe.</p>
-
                 <form onSubmit={handleSaveQueues}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                         {availableQueues.map((queue: any) => (
