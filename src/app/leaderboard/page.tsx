@@ -141,10 +141,11 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
 
           <Leaderboard leaderboard={leaderboard} />
 
-          <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800/80">
+          {/* Onglets compacts */}
+          <div className="inline-flex bg-slate-900 p-1 rounded-lg border border-slate-800">
             <Link
                 href={`/leaderboard?queue=${currentQueue}&tab=history`}
-                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 rounded-md font-semibold text-sm transition-all ${
+                className={`inline-flex items-center justify-center gap-2 px-6 py-2 rounded-md font-semibold text-sm transition-all ${
                     currentTab !== "stats" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
                 }`}
             >
@@ -153,7 +154,7 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
             </Link>
             <Link
                 href={`/leaderboard?queue=${currentQueue}&tab=stats`}
-                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 rounded-md font-semibold text-sm transition-all ${
+                className={`inline-flex items-center justify-center gap-2 px-6 py-2 rounded-md font-semibold text-sm transition-all ${
                     currentTab === "stats" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
                 }`}
             >
