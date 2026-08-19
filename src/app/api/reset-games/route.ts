@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-    try {z
+    try {
         const statsDeleted = await prisma.userQueueStat.deleteMany({});
 
         const gamesDeleted = await prisma.game.deleteMany({});
