@@ -29,14 +29,15 @@ export default async function TeamSettingsPage() {
 
     const distinctQueues = await prisma.game.findMany({
         where: {
-            teamId: teamId,
+            user: {
+                teams: {
+                    some: { teamId: teamId }
+                }
+            },
             queueId: { not: null }
         },
         select: { queueId: true },
-        distinct: ['queueId'],
-        orderBy: {
-            queueId: 'asc'
-        }
+        distinct: ['queueId']
     });
 
     const availableQueues = distinctQueues.map(q => ({
