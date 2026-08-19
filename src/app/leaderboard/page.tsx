@@ -81,7 +81,7 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
   const searchParams = await props.searchParams;
   const queues = await getAvailableQueues(teamId);
 
-  const defaultQueue = process.env.NEXT_PUBLIC_DEFAULT_SEASON_QUEUE || "Core BO1 - Set 13";
+  const defaultQueue = process.env.NEXT_PUBLIC_DEFAULT_SEASON_QUEUE || "Core Set 13 BO1";
   const currentQueue = searchParams.queue || (queues.includes(defaultQueue) ? defaultQueue : queues[0] || "");
 
   const leaderboard = currentQueue ? await getLeaderboard(currentQueue, teamId) : [];
