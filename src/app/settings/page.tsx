@@ -11,10 +11,10 @@ export default async function SettingsPage() {
         redirect("/");
     }
 
-    const user = await prisma.user.findUnique({
+    const userFromDb = await prisma.user.findUnique({
         where: { id: session.user.id },
         include: {
-            memberships: {
+            teams: {
                 include: {
                     team: {
                         include: {
@@ -28,9 +28,16 @@ export default async function SettingsPage() {
         }
     });
 
-    if (!user) {
+    if (!userFromDb) {
         redirect("/");
     }
+
+    const userData = {
+        id: userFromDb.id,
+        lorcanaApiKey: userFromDb.lorcanaApiKey,
+        dreambornUrl: userFromDb.dreambornUrl,
+        memberships: userFromDb.teams
+    };
 
     return (
         <div className="flex-1 flex flex-col bg-slate-950 relative overflow-hidden">
@@ -42,7 +49,7 @@ export default async function SettingsPage() {
                     </p>
                 </div>
 
-                <ProfileForm user={user} />
+                <ProfileForm user={userData} />
             </main>
         </div>
     );
