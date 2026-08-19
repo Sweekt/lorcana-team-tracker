@@ -33,7 +33,7 @@ export async function syncTeamHistory(targetUserId?: string) {
             const queuesUpdated = new Set<string>();
 
             while (hasMore) {
-                const url = new URL("https://duels.ink/api/me/history");
+                const url = new URL("https://duels.ink/api/account/history");
                 if (cursor) url.searchParams.append("cursor", cursor);
 
                 const response = await fetch(url.toString(), {
