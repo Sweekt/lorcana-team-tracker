@@ -4,7 +4,7 @@ import { useState } from "react";
 import ColorDots from "@/components/ColorDots";
 import DeckModal from "@/components/DeckModal";
 
-export default function PlayerStatsView({ games }: { games: any[] }) {
+export default function StatsView({ games, teamView = false }: { games: any[]; teamView?: boolean }) {
     const [selectedDeck, setSelectedDeck] = useState<any | null>(null);
 
     if (games.length === 0) {
@@ -28,14 +28,32 @@ export default function PlayerStatsView({ games }: { games: any[] }) {
         const isOTP = g.wentFirst === true;
         const isOTD = g.wentFirst === false;
 
+        const playerName = g.user?.name || "Inconnu";
+
         if (!acc[color]) {
-            acc[color] = { total: 0, wins: 0, otpTotal: 0, otpWins: 0, otdTotal: 0, otdWins: 0, matchups: {} };
+            acc[color] = {
+                total: 0,
+                wins: 0,
+                otpTotal: 0,
+                otpWins: 0,
+                otdTotal: 0,
+                otdWins: 0,
+                matchups: {},
+                players: {}
+            };
         }
 
         acc[color].total += 1;
         if (isWin) acc[color].wins += 1;
         if (isOTP) { acc[color].otpTotal += 1; if (isWin) acc[color].otpWins += 1; }
         if (isOTD) { acc[color].otdTotal += 1; if (isWin) acc[color].otdWins += 1; }
+
+        // Enregistrement des stats par joueur pour ce deck
+        if (!acc[color].players[playerName]) {
+            acc[color].players[playerName] = { total: 0, wins: 0 };
+        }
+        acc[color].players[playerName].total += 1;
+        if (isWin) acc[color].players[playerName].wins += 1;
 
         if (!acc[color].matchups[oppColor]) {
             acc[color].matchups[oppColor] = { total: 0, wins: 0, otpTotal: 0, otpWins: 0, otdTotal: 0, otdWins: 0 };
@@ -49,22 +67,42 @@ export default function PlayerStatsView({ games }: { games: any[] }) {
     }, {});
 
     const deckStats = Object.entries(decksMap)
-        .map(([color, d]: any) => ({
-            color,
-            total: d.total,
-            wins: d.wins,
-            wr: Math.round((d.wins / d.total) * 100),
-            otpWr: d.otpTotal > 0 ? Math.round((d.otpWins / d.otpTotal) * 100) : null,
-            otdWr: d.otdTotal > 0 ? Math.round((d.otdWins / d.otdTotal) * 100) : null,
-            otpTotal: d.otpTotal,
-            otpWins: d.otpWins,
-            otdTotal: d.otdTotal,
-            otdWins: d.otdWins,
-            // On transforme l'objet des matchups en tableau trié pour la modale
-            matchups: Object.entries(d.matchups)
-                .map(([opponent, m]: any) => ({ opponent, ...m }))
-                .sort((a, b) => b.total - a.total)
-        }))
+        .map(([color, d]: any) => {
+            let deckmaster = null;
+            if (teamView) {
+                let bestWr = -1;
+                for (const [playerName, pStats] of Object.entries(d.players) as [string, any][]) {
+                    if (pStats.total >= 10) {
+                        const pWr = (pStats.wins / pStats.total) * 100;
+                        if (pWr > bestWr) {
+                            bestWr = pWr;
+                            deckmaster = {
+                                name: playerName,
+                                wr: Math.round(pWr),
+                                total: pStats.total
+                            };
+                        }
+                    }
+                }
+            }
+
+            return {
+                color,
+                total: d.total,
+                wins: d.wins,
+                wr: Math.round((d.wins / d.total) * 100),
+                otpWr: d.otpTotal > 0 ? Math.round((d.otpWins / d.otpTotal) * 100) : null,
+                otdWr: d.otdTotal > 0 ? Math.round((d.otdWins / d.otdTotal) * 100) : null,
+                otpTotal: d.otpTotal,
+                otpWins: d.otpWins,
+                otdTotal: d.otdTotal,
+                otdWins: d.otdWins,
+                deckmaster,
+                matchups: Object.entries(d.matchups)
+                    .map(([opponent, m]: any) => ({ opponent, ...m }))
+                    .sort((a, b) => b.total - a.total)
+            };
+        })
         .sort((a, b) => b.total - a.total);
 
     return (
@@ -120,6 +158,17 @@ export default function PlayerStatsView({ games }: { games: any[] }) {
                                         <span className="text-xs text-slate-400 font-medium">{d.total} games</span>
                                     </div>
                                 </div>
+
+                                {/* Affichage du Deckmaster si l'option est active et qu'il y a un profil éligible */}
+                                {teamView && d.deckmaster && (
+                                    <div className="mb-4 bg-indigo-950/30 border border-indigo-900/50 rounded-xl p-2.5 flex items-center justify-between">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Deckmaster</span>
+                                        <div className="text-right">
+                                            <p className="text-xs font-bold text-slate-200">{d.deckmaster.name}</p>
+                                            <p className="text-[10px] text-emerald-400 font-medium">{d.deckmaster.wr}% WR ({d.deckmaster.total}g)</p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-2 gap-3 mt-auto">
                                     <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800/50 group-hover:bg-slate-900 transition-colors">

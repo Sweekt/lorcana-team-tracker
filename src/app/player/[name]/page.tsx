@@ -7,7 +7,7 @@ import { getCurrentTeamId } from "@/lib/current-team";
 import HistoryTable from "@/components/HistoryTable";
 import MmrChart from "@/components/MmrChart";
 import PlayerViewController from "@/components/PlayerViewController";
-import PlayerStatsView from "@/components/PlayerStatsView";
+import StatsView from "@/components/StatsView";
 import Pagination from "@/components/Pagination";
 import SyncButton from "@/components/SyncButton";
 import StarIcon from "@/assets/ic_star.svg";
@@ -88,9 +88,9 @@ export default async function PlayerProfilePage(props: Props) {
     if (currentTab === "stats") {
         const allStatsGames = await prisma.game.findMany({
             where: whereClause,
-            select: { result: true, wentFirst: true, myDeckColors: true, oppDeckColors: true }
+            select: { result: true, wentFirst: true, myDeckColors: true, oppDeckColors: true, user: { select: { name: true } } }
         });
-        tabContent = <PlayerStatsView games={allStatsGames} />;
+        tabContent = <StatsView games={allStatsGames} teamView={false}/>;
     }
     else {
         const totalGamesCount = await prisma.game.count({ where: whereClause });

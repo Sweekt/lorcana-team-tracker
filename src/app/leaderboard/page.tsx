@@ -6,10 +6,12 @@ import Leaderboard from "@/components/Leaderboard";
 import HistoryTable from "@/components/HistoryTable";
 import QueueSelector from "@/components/QueueSelector";
 import SyncButton from "@/components/SyncButton";
+import StatsView from "@/components/StatsView";
 import { getCurrentTeamId } from "@/lib/current-team";
 import Link from "next/link";
-import SettingsIcon from "@/assets/ic_settings.svg"
-import HistoryIcon from "@/assets/ic_history.svg"
+import SettingsIcon from "@/assets/ic_settings.svg";
+import HistoryIcon from "@/assets/ic_history.svg";
+import StatIcon from "@/assets/ic_leaderboard.svg";
 
 async function getAvailableQueues(teamId: string) {
   const team = await prisma.team.findUnique({
@@ -18,7 +20,6 @@ async function getAvailableQueues(teamId: string) {
   });
 
   const queues = team?.activeQueues || [];
-
   return queues.sort((a, b) => a.localeCompare(b));
 }
 
@@ -63,7 +64,7 @@ async function getRecentHistory(queueId: string, teamId: string) {
   });
 }
 
-export default async function LeaderboardPage(props: { searchParams: Promise<{ queue?: string }> }) {
+export default async function LeaderboardPage(props: { searchParams: Promise<{ queue?: string; tab?: string }> }) {
   const session = await getServerSession(authOptions);
 
   if (session?.user?.email) {
@@ -95,6 +96,24 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
 
   const leaderboard = currentQueue ? await getLeaderboard(currentQueue, teamId) : [];
   const recentGames = currentQueue ? await getRecentHistory(currentQueue, teamId) : [];
+  const currentTab = searchParams.tab || "history";
+
+  let tabContent;
+
+  if (currentTab === "stats") {
+    const allStatsGames = await prisma.game.findMany({
+      where: {
+        queueId: currentQueue,
+        user: { teams: { some: { teamId: teamId } } }
+      },
+      select: { result: true, wentFirst: true, myDeckColors: true, oppDeckColors: true, user: { select: { name: true } } }
+    });
+    tabContent = <StatsView games={allStatsGames} teamView={true}/>;
+  } else {
+    tabContent = (
+        <HistoryTable games={recentGames} />
+    );
+  }
 
   return (
       <div className="flex-1 flex flex-col justify-center bg-slate-950 pb-4">
@@ -122,16 +141,30 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
 
           <Leaderboard leaderboard={leaderboard} />
 
-          {/* Historique */}
-          <section>
-            <div className="mb-4">
-              <div className="flex flex-row items-center gap-2">
-                <HistoryIcon className="w-5 h-5" />
-                <span className="text-xl font-bold text-slate-200">Historique</span>
-              </div>
-              <p className="text-slate-500 text-sm">Les 20 dernières parties de l'équipe dans ce format.</p>
-            </div>
-            <HistoryTable games={recentGames} />
+          <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800/80">
+            <Link
+                href={`/leaderboard?queue=${currentQueue}&tab=history`}
+                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 rounded-md font-semibold text-sm transition-all ${
+                    currentTab !== "stats" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+                }`}
+            >
+              <HistoryIcon className="h-4 w-4" />
+              Historique
+            </Link>
+            <Link
+                href={`/leaderboard?queue=${currentQueue}&tab=stats`}
+                className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 rounded-md font-semibold text-sm transition-all ${
+                    currentTab === "stats" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+                }`}
+            >
+              <StatIcon className="h-4 w-4" />
+              Statistiques
+            </Link>
+          </div>
+
+          {/* Content */}
+          <section className="transition-all">
+            {tabContent}
           </section>
 
         </main>
