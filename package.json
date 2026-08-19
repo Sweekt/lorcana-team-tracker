@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "import:cards": "ts-node src/scripts/import-cards.ts"
+    "import:cards": "node --import ts-node/register src/scripts/import-cards.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
