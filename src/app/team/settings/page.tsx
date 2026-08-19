@@ -3,15 +3,7 @@ import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getCurrentTeamId } from "@/lib/current-team";
-import TeamSettingsForm from "./TeamSettingsForm"; // Le composant client qu'on crée juste après
-
-// Liste globale des formats possibles sur Lorcana
-const AVAILABLE_QUEUES = [
-    { id: "core-bo1", label: "Core (BO1)" },
-    { id: "core-bo3", label: "Core (BO3)" },
-    { id: "draft", label: "Draft" },
-    { id: "sealed", label: "Scellé" }
-];
+import TeamSettingsForm from "./TeamSettingsForm";
 
 export default async function TeamSettingsPage() {
     const session = await getServerSession(authOptions);
@@ -19,25 +11,36 @@ export default async function TeamSettingsPage() {
 
     if (!session?.user?.id || !teamId) redirect("/");
 
-    // On récupère l'équipe, ses membres, et on vérifie le rôle
     const team = await prisma.team.findUnique({
         where: { id: teamId },
         include: {
             members: {
                 include: { user: { select: { id: true, name: true, image: true, lorcanaApiKey: true } } },
-                orderBy: { role: "asc" } // ADMIN en premier
+                orderBy: { role: "asc" }
             }
         }
     });
 
     const currentMember = team?.members.find(m => m.userId === session.user.id);
 
-    // Sécurité stricte : si pas admin, on dégage !
     if (currentMember?.role !== "ADMIN" || !team) {
         redirect("/");
     }
 
-    // On construit le lien d'invitation complet
+    const distinctQueues = await prisma.game.findMany({
+        where: {
+            teamId: teamId,
+            queueId: { not: null }
+        },
+        select: { queueId: true },
+        distinct: ['queueId']
+    });
+
+    const availableQueues = distinctQueues.map(q => ({
+        id: q.queueId as string,
+        label: q.queueId as string // Le label et l'ID sont identiques puisque c'est le nom de la saison
+    }));
+
     const inviteLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/invite/${team.inviteToken}`;
 
     return (
@@ -50,7 +53,7 @@ export default async function TeamSettingsPage() {
 
                 <TeamSettingsForm
                     team={team}
-                    availableQueues={AVAILABLE_QUEUES}
+                    availableQueues={availableQueues}
                     inviteLink={inviteLink}
                     currentUserId={session.user.id}
                 />

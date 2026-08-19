@@ -65,7 +65,7 @@ model Team {
   logoUrl      String?
   inviteToken  String       @unique @default(uuid())
   createdAt    DateTime     @default(now())
-  activeQueues String[]     @default(["core-bo1"])
+  activeQueues String[]     @default([])
   members      TeamMember[]
   games        Game[]
 }

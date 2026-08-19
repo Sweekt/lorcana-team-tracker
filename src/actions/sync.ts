@@ -59,7 +59,7 @@ export async function syncTeamHistory(targetUserId?: string) {
                         userId: user.id,
                         teamId: teamId,
                         startedAt: new Date(game.started_at),
-                        queueId: game.queue_id,
+                        queueId: game.queueSeasonName || game.queue_id,
                         wentFirst: game.went_first,
                         result: game.result,
                         endReason: game.end_reason,
