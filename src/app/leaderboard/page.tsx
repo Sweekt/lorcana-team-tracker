@@ -16,7 +16,7 @@ async function getAvailableQueues(teamId: string) {
     where: { id: teamId },
     select: { activeQueues: true },
     orderBy: {
-      queueId: 'asc'
+      activeQueues: 'asc'
     }
   });
 
