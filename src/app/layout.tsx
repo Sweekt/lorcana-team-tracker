@@ -4,7 +4,9 @@ import {Metadata} from "next";
 import {Toaster} from "sonner";
 import AuthProvider from "@/components/AuthProvider";
 import Footer from "@/components/Footer";
-import {authOptions} from "@/lib/authOptions";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import prisma from "@/lib/prisma";
 
 export const metadata : Metadata = {
   title: "LoreTracker",
