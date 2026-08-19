@@ -11,7 +11,7 @@ function getCardUniqueId(cardData: any): string {
 }
 
 async function main() {
-    const filePath = path.join(__dirname, "../../allSets.json");
+    const filePath = path.join(__dirname, "../../allCards.json");
 
     if (!fs.existsSync(filePath)) {
         console.error("Fichier allSets.json introuvable à l'emplacement :", filePath);
