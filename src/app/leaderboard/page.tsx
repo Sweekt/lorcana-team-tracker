@@ -14,13 +14,12 @@ import HistoryIcon from "@/assets/ic_history.svg"
 async function getAvailableQueues(teamId: string) {
   const team = await prisma.team.findUnique({
     where: { id: teamId },
-    select: { activeQueues: true },
-    orderBy: {
-      activeQueues: 'asc'
-    }
+    select: { activeQueues: true }
   });
 
-  return team?.activeQueues || [];
+  const queues = team?.activeQueues || [];
+
+  return queues.sort((a, b) => a.localeCompare(b));
 }
 
 async function getLeaderboard(queueId: string, teamId: string) {
