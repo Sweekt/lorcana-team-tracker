@@ -36,8 +36,15 @@ async function main() {
     for (const card of cardsData) {
         const cardId = getCardUniqueId(card);
 
-        await prisma.card.create({
-            data: {
+        await prisma.card.upsert({
+            where: { id: cardId },
+            update: {
+                name: card.fullName || card.name || "Carte Inconnue",
+                imageUrl: card.images?.thumbnail || "",
+                type: card.type || "Unknown",
+                cost: card.cost || 0,
+            },
+            create: {
                 id: cardId,
                 name: card.fullName || card.name || "Carte Inconnue",
                 imageUrl: card.images?.thumbnail || "",
