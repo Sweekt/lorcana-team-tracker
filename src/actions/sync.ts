@@ -33,7 +33,7 @@ export async function syncTeamHistory(targetUserId?: string) {
             const queuesUpdated = new Set<string>();
 
             while (hasMore) {
-                const url = new URL("https://duels.ink/api/account/history");
+                const url = new URL("https://duels.ink/api/me/match-history");
                 if (cursor) url.searchParams.append("cursor", cursor);
 
                 const response = await fetch(url.toString(), {
@@ -51,36 +51,28 @@ export async function syncTeamHistory(targetUserId?: string) {
                 const data = await response.json();
                 const games = data.games || [];
 
-                // 1. LE FILTRE CORRIGÉ : On utilise isMatchmaking (issu du nouveau format JSON)
-                const matchmakingGames = games.filter((g: any) => g.isMatchmaking === true);
+                const matchmakingGames = games.filter((g: any) => g.mode === "matchmaking");
 
                 if (matchmakingGames.length > 0) {
                     const gamesToInsert = matchmakingGames.map((game: any) => ({
-                        id: game.id || game.gameId,
+                        id: game.game_id,
                         userId: user.id,
                         teamId: teamId,
-                        startedAt: new Date(game.createdAt),
-                        queueId: game.queueSeasonName || game.queueId,
-                        wentFirst: game.wentFirst,
+                        startedAt: new Date(game.started_at),
+                        queueId: game.queue_name,
+                        wentFirst: game.went_first,
                         result: game.result,
-                        endReason: game.status,
-                        myLore: game.myLore,
-                        oppLore: game.opponentLore,
-                        mmrBefore: game.myMmrBefore,
-                        mmrAfter: game.myMmrAfter,
-
-                        // Si le delta n'est plus fourni, on le calcule nous-mêmes
-                        mmrDelta: (game.myMmrAfter && game.myMmrBefore)
-                            ? (game.myMmrAfter - game.myMmrBefore)
-                            : null,
-
-                        myDeckColors: game.myColors,
-                        yourDecklist: game.myDeckCardIds ? JSON.stringify(game.myDeckCardIds) : null,
-                        oppDisplayName: game.opponentName,
-                        oppDeckColors: game.opponentColors,
-
-                        // Si replayUrl n'existe plus directement, on le reconstruit avec replayId
-                        replayUrl: game.replayId ? `https://duels.ink/replay/${game.replayId}` : null
+                        endReason: game.end_reason,
+                        myLore: game.your_lore,
+                        oppLore: game.opp_lore,
+                        mmrBefore: game.mmr_before,
+                        mmrAfter: game.mmr_after,
+                        mmrDelta: game.mmr_delta,
+                        myDeckColors: game.your_deck_colors,
+                        yourDecklist: game.your_decklist ? JSON.stringify(game.your_decklist) : null,
+                        oppDisplayName: game.opp_display_name,
+                        oppDeckColors: game.opp_deck_colors,
+                        replayUrl: game.replay_url
                     }));
 
                     const existingGames = await prisma.game.findMany({
