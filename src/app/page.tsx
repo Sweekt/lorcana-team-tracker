@@ -52,7 +52,15 @@ export default async function HomePage() {
         where: { id: teamId },
         include: {
             _count: {
-                select: { members: true, games: true }
+                select: { members: true }
+            }
+        }
+    });
+
+    const totalTeamGames = await prisma.game.count({
+        where: {
+            user: {
+                teams: { some: { teamId: teamId } }
             }
         }
     });
@@ -91,7 +99,7 @@ export default async function HomePage() {
                         </div>
                         <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 px-5 py-2.5 rounded-full text-slate-300 font-medium shadow-sm">
                             <DuelIcon className="text-white w-4 h-4" />
-                            <span className="text-white font-bold">{team._count.games}</span> Parties
+                            <span className="text-white font-bold">{totalTeamGames}</span> Parties
                         </div>
                     </div>
                 </div>
