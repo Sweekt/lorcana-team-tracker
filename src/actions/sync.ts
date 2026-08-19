@@ -51,28 +51,37 @@ export async function syncTeamHistory(targetUserId?: string) {
                 const data = await response.json();
                 const games = data.games || [];
 
-                const matchmakingGames = games.filter((g: any) => g.mode === "matchmaking");
+                // 1. LE FILTRE CORRIGÉ : On utilise isMatchmaking (issu du nouveau format JSON)
+                const matchmakingGames = games.filter((g: any) => g.isMatchmaking === true);
 
                 if (matchmakingGames.length > 0) {
+                    // 2. LE MAPPING CORRIGÉ : Tout passe en camelCase !
                     const gamesToInsert = matchmakingGames.map((game: any) => ({
-                        id: game.game_id,
+                        id: game.id || game.gameId,
                         userId: user.id,
                         teamId: teamId,
-                        startedAt: new Date(game.started_at),
-                        queueId: game.queueSeasonName || game.queue_id,
-                        wentFirst: game.went_first,
+                        startedAt: new Date(game.createdAt), // "createdAt" au lieu de "started_at"
+                        queueId: game.queueSeasonName || game.queueId, // La fameuse ligne magique !
+                        wentFirst: game.wentFirst,
                         result: game.result,
-                        endReason: game.end_reason,
-                        myLore: game.your_lore,
-                        oppLore: game.opp_lore,
-                        mmrBefore: game.mmr_before,
-                        mmrAfter: game.mmr_after,
-                        mmrDelta: game.mmr_delta,
-                        myDeckColors: game.your_deck_colors,
-                        yourDecklist: game.your_decklist ? JSON.stringify(game.your_decklist) : null,
-                        oppDisplayName: game.opp_display_name,
-                        oppDeckColors: game.opp_deck_colors,
-                        replayUrl: game.replay_url
+                        endReason: game.status, // "status" semble remplacer "end_reason"
+                        myLore: game.myLore,
+                        oppLore: game.opponentLore,
+                        mmrBefore: game.myMmrBefore,
+                        mmrAfter: game.myMmrAfter,
+
+                        // Si le delta n'est plus fourni, on le calcule nous-mêmes
+                        mmrDelta: (game.myMmrAfter && game.myMmrBefore)
+                            ? (game.myMmrAfter - game.myMmrBefore)
+                            : null,
+
+                        myDeckColors: game.myColors,
+                        yourDecklist: game.myDeckCardIds ? JSON.stringify(game.myDeckCardIds) : null,
+                        oppDisplayName: game.opponentName,
+                        oppDeckColors: game.opponentColors,
+
+                        // Si replayUrl n'existe plus directement, on le reconstruit avec replayId
+                        replayUrl: game.replayId ? `https://duels.ink/replay/${game.replayId}` : null
                     }));
 
                     const existingGames = await prisma.game.findMany({
