@@ -30,8 +30,8 @@ async function getLeaderboard(queueId: string, teamId: string) {
     select: {
       name: true,
       image: true,
-      _count: { select: { games: { where: { teamId, queueId } } } },
-      games: { where: { teamId, queueId }, orderBy: { startedAt: "desc" }, take: 1, select: { mmrAfter: true } },
+      _count: { select: { games: { where: { queueId } } } },
+      games: { where: { queueId }, orderBy: { startedAt: "desc" }, take: 1, select: { mmrAfter: true } },
     },
   });
 
@@ -49,7 +49,14 @@ async function getLeaderboard(queueId: string, teamId: string) {
 
 async function getRecentHistory(queueId: string, teamId: string) {
   return prisma.game.findMany({
-    where: {queueId, teamId},
+    where: {
+      queueId: queueId,
+      user: {
+        teams: {
+          some: { teamId: teamId }
+        }
+      }
+    },
     orderBy: {startedAt: "desc"},
     take: 20,
     include: {user: {select: {name: true, image: true}}}

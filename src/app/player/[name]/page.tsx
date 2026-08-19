@@ -36,7 +36,7 @@ export default async function PlayerProfilePage(props: Props) {
     const targetUser = await prisma.user.findFirst({
         where: {
             name: playerName,
-            teams: { some: { teamId: teamId } } // 🔒 Sécurité SaaS !
+            teams: { some: { teamId: teamId } }
         }
     });
 
@@ -49,7 +49,7 @@ export default async function PlayerProfilePage(props: Props) {
     const teamQueues = new Set(team?.activeQueues || []);
 
     const rawQueues = await prisma.game.findMany({
-        where: { userId: targetUser.id, teamId: teamId, queueId: { not: null } },
+        where: { userId: targetUser.id, queueId: { not: null } },
         distinct: ["queueId"],
         select: { queueId: true }
     });
@@ -61,7 +61,6 @@ export default async function PlayerProfilePage(props: Props) {
     const allGamesAsc = await prisma.game.findMany({
         where: {
             userId: targetUser.id,
-            teamId: teamId, // 🔒 Sécurité SaaS
             mmrAfter: { not: null },
             queueId: { in: playerQueues }
         },
@@ -74,7 +73,7 @@ export default async function PlayerProfilePage(props: Props) {
         [g.queueId as string]: g.mmrAfter
     }));
 
-    const whereClause: any = { userId: targetUser.id, teamId: teamId };
+    const whereClause: any = { userId: targetUser.id };
     if (currentQueue !== "ALL") {
         whereClause.queueId = currentQueue;
     } else if (playerQueues.length > 0) {

@@ -67,7 +67,6 @@ model Team {
   createdAt    DateTime     @default(now())
   activeQueues String[]     @default([])
   members      TeamMember[]
-  games        Game[]
 }
 
 // Table de liaison entre Utilisateur et Équipe avec un Rôle
@@ -113,12 +112,9 @@ model Game {
   mmrDelta       Float?
 
   userId String
-  teamId String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
-  @@index([teamId])
   @@index([userId])
 }
 

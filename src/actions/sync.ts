@@ -57,7 +57,6 @@ export async function syncTeamHistory(targetUserId?: string) {
                     const gamesToInsert = matchmakingGames.map((game: any) => ({
                         id: game.game_id,
                         userId: user.id,
-                        teamId: teamId,
                         startedAt: new Date(game.started_at),
                         queueId: game.season_name || game.queue_name,
                         wentFirst: game.went_first,
