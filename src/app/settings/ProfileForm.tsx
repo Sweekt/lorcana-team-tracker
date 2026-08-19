@@ -175,6 +175,7 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                         {/* Corps de la modale (Ton composant extrait) */}
                         <div className="p-6">
                             <CreateTeamForm
+                                userId={user.id}
                                 onSuccess={() => {
                                     setIsCreateModalOpen(false);
                                     // Optionnel : router.refresh() pour mettre à jour la liste des équipes
