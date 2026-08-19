@@ -13,7 +13,7 @@ export async function createTeam(formData: FormData, userId: string) {
     }
 
     try {
-        const defaultQueue = process.env.NEXT_PUBLIC_DEFAULT_SEASON_QUEUE || "Core Set 13 BO1";
+        const defaultQueue = process.env.NEXT_PUBLIC_DEFAULT_SEASON_QUEUE || "Core BO1 - Set 13";
 
         const team = await prisma.team.create({
             data: {

@@ -33,12 +33,15 @@ export default async function TeamSettingsPage() {
             queueId: { not: null }
         },
         select: { queueId: true },
-        distinct: ['queueId']
+        distinct: ['queueId'],
+        orderBy: {
+            queueId: 'asc'
+        }
     });
 
     const availableQueues = distinctQueues.map(q => ({
         id: q.queueId as string,
-        label: q.queueId as string // Le label et l'ID sont identiques puisque c'est le nom de la saison
+        label: q.queueId as string
     }));
 
     const inviteLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/invite/${team.inviteToken}`;
