@@ -17,15 +17,19 @@ export async function getDeckDetails(decklist: { cardId: string; count: number }
         let card = cardsMap.get(item.cardId);
 
         if (!card || card.type === null || card.cost === null) {
-            const [set, num] = item.cardId.split("-");
+            // CORRECTION : On gère les IDs standards (Set-Num) et les promos (Set-Promo-Num)
+            const parts = item.cardId.split("-");
+            const set = parts[0];
+            const num = parts.length === 3 ? parts[2] : parts[1]; // Récupère le vrai numéro de la carte
+
             try {
                 const res = await fetch(`https://api.lorcana-api.com/cards/fetch?search=Set_Num=${set};Card_Num=${num}`);
                 const data = await res.json();
 
                 if (data && data[0]) {
                     const cardData = {
-                        name: data[0].Name || "Carte Inconnue",
-                        imageUrl: data[0].Image || "",
+                        name: data[0].FullName || data[0].Name || "Carte Inconnue",
+                        imageUrl: data[0].Image || data[0].Images?.thumbnail || "",
                         type: data[0].Type || "Unknown",
                         cost: data[0].Cost || 0,
                     };
