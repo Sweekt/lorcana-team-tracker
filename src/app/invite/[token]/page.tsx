@@ -61,7 +61,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
         async function activateTeamAndRedirect() {
             "use server";
 
-            if (!session?.user?.id) return;
+            if (!session?.user?.id || !team) return;
 
             await prisma.user.update({
                 where: { id: session.user.id },
