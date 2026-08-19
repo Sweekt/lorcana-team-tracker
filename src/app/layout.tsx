@@ -20,8 +20,8 @@ export default async function RootLayout({
 }) {
     const session = await getServerSession(authOptions);
 
-    let userTeams = [];
-    let activeTeamId = null;
+    let userTeams: { id: string; name: string }[] = [];
+    let activeTeamId: string | null = null;
 
     if (session?.user?.id) {
         const user = await prisma.user.findUnique({
