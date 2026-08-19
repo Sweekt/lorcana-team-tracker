@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "import:cards": "node --import=ts-node/esm src/scripts/import-cards.ts"
+    "import:cards": "tsx src/scripts/import-cards.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -37,6 +37,6 @@
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "ts-node": "^10.9.2"
+    "tsx": "^4.19.0"
   }
 }
