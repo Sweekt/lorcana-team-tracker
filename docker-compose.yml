@@ -26,7 +26,7 @@ services:
       - "traefik.http.routers.tracker.entrypoints=websecure"
       - "traefik.http.routers.tracker.tls.certresolver=myresolver"
       - "traefik.http.services.tracker.loadbalancer.server.port=3000"
-      - "traefik.docker.network=portfolio_app-network"
+      - "traefik.docker.network=app-network"
     networks:
       - lorcana-internal
       - app-network
