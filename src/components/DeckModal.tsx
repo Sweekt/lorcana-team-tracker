@@ -46,15 +46,15 @@ export default function DeckModal({ deck, onClose }: { deck: any, onClose: () =>
                             <StatIcon className="w-4 h-4" /> Statistiques Globales
                         </h3>
                         <div className="grid grid-cols-3 gap-4">
-                            <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800/80 flex flex-col items-center">
+                            <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800/80 border-t-2 border-t-indigo-500 shadow-sm flex flex-col items-center">
                                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">Win Rate</span>
                                 {renderCell(deck.wins, deck.total)}
                             </div>
-                            <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800/80 flex flex-col items-center">
+                            <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800/80 border-t-2 border-t-emerald-500 shadow-sm flex flex-col items-center">
                                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">En premier (Play)</span>
                                 {renderCell(deck.otpWins, deck.otpTotal)}
                             </div>
-                            <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800/80 flex flex-col items-center">
+                            <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800/80 border-t-2 border-t-amber-500 shadow-sm flex flex-col items-center">
                                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">En second (Draw)</span>
                                 {renderCell(deck.otdWins, deck.otdTotal)}
                             </div>

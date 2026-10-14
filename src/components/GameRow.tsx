@@ -88,7 +88,7 @@ export default function GameRow({ game }: GameRowProps) {
                         className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold border ${
                             game.wentFirst
                                 ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/30"
-                                : "bg-slate-800 text-slate-500 border-slate-700"
+                                : "bg-amber-500/10 text-amber-400/90 border-amber-500/30"
                         }`}>
                         {game.wentFirst ? "OTP" : "OTD"}
                     </span>
@@ -183,7 +183,7 @@ export default function GameRow({ game }: GameRowProps) {
                                     {deckDetails.map((card, idx) => (
                                         <div key={idx} className="flex flex-col items-center group relative">
                                             <div
-                                                className="relative w-full aspect-2.5/3.5 bg-slate-800 rounded-lg border border-slate-700 overflow-hidden shadow-sm">
+                                                className="relative w-full aspect-2.5/3.5 bg-slate-800 rounded-lg border border-slate-700 overflow-hidden shadow-sm group-hover:scale-105 group-hover:border-indigo-500/50 group-hover:shadow-lg group-hover:shadow-indigo-500/10 transition-all duration-200">
                                                 {card.imageUrl ? (
                                                     <img src={card.imageUrl} alt={card.name}
                                                          className="object-cover w-full h-full"/>

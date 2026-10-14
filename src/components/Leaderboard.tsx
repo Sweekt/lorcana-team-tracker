@@ -3,9 +3,9 @@ import LeaderboardIcon from "@/assets/ic_leaderboard.svg"
 
 const getRankBadge = (index: number) => {
     switch (index) {
-        case 0: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-500 font-bold border border-yellow-500/30 shadow-sm">1</span>;
-        case 1: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-400/20 text-slate-300 font-bold border border-slate-400/30 shadow-sm">2</span>;
-        case 2: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500/20 text-orange-400 font-bold border border-orange-500/30 shadow-sm">3</span>;
+        case 0: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-linear-to-b from-amber-400/25 to-yellow-500/10 text-yellow-400 font-extrabold border border-yellow-500/40 shadow-sm shadow-yellow-500/20">1</span>;
+        case 1: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-linear-to-b from-slate-300/25 to-slate-400/10 text-slate-200 font-bold border border-slate-400/40 shadow-sm">2</span>;
+        case 2: return <span className="flex items-center justify-center w-8 h-8 rounded-full bg-linear-to-b from-amber-700/25 to-orange-600/10 text-amber-400 font-bold border border-orange-500/40 shadow-sm">3</span>;
         default: return <span className="flex items-center justify-center w-8 h-8 text-slate-500 font-medium">{index + 1}</span>;
     }
 };

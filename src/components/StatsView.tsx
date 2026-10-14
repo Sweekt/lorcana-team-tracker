@@ -109,19 +109,19 @@ export default function StatsView({ games, teamView = false }: { games: any[]; t
         <div className="space-y-8">
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 border-t-2 border-t-indigo-500 shadow-sm">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Winrate Global</span>
                     <div className="text-3xl font-extrabold text-indigo-400 mt-2">{globalWr}%</div>
                     <span className="text-xs text-slate-500 mt-1 block">Sur {total} parties jouées</span>
                 </div>
 
-                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 border-t-2 border-t-emerald-500 shadow-sm">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">En commençant (Play)</span>
                     <div className="text-3xl font-extrabold text-emerald-400 mt-2">{firstWr}%</div>
                     <span className="text-xs text-slate-500 mt-1 block">{firstGames.length} parties</span>
                 </div>
 
-                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+                <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 border-t-2 border-t-amber-500 shadow-sm">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">En second (Draw)</span>
                     <div className="text-3xl font-extrabold text-amber-400 mt-2">{drawWr}%</div>
                     <span className="text-xs text-slate-500 mt-1 block">{drawGames.length} parties</span>
@@ -136,7 +136,7 @@ export default function StatsView({ games, teamView = false }: { games: any[]; t
                         <div
                             key={d.color}
                             onClick={() => setSelectedDeck(d)}
-                            className="group cursor-pointer bg-slate-900 rounded-2xl border border-slate-800 flex flex-col justify-between overflow-hidden hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all"
+                            className="group cursor-pointer bg-slate-900 rounded-2xl border border-slate-800 flex flex-col justify-between overflow-hidden hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 hover:-translate-y-0.5 transition-all duration-200"
                         >
                             <div className="p-5 grow flex flex-col">
                                 <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-800/60">

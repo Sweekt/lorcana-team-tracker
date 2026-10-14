@@ -23,7 +23,7 @@ export default function QueueSelector({
                 onChange={(e) => {
                     router.push(`/${playerName ? playerPageRoute : 'leaderboard'}?queue=${encodeURIComponent(e.target.value)}`);
                 }}
-                className="w-full sm:w-36 bg-slate-900 border text-xs border-slate-700 text-slate-200 py-2.5 pl-4 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer font-medium appearance-none"
+                className="w-full sm:w-56 min-w-[190px] bg-slate-900 border text-xs border-slate-700 text-slate-200 py-2.5 pl-4 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer font-medium appearance-none"
             >
                 {sortedQueues.map((q) => (
                     <option key={q} value={q}>

@@ -106,16 +106,16 @@ export default async function HomePage() {
 
                 {/* LIENS DE NAVIGATION PRINCIPAUX */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl mt-2">
-                    <Link href="/leaderboard" className="group flex items-center gap-4 bg-indigo-500/10 border border-indigo-500/20 group-hover:bg-indigo-500/20 shadow-lg hover:shadow-indigo-500/20 p-4 sm:p-5 rounded-2xl transition-all">
-                        <LeaderboardIcon className="text-indigo-400 w-6 h-6 group-hover:scale-110 transition-transform" />
+                    <Link href="/leaderboard" className="group flex items-center gap-4 bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 shadow-lg hover:shadow-indigo-500/20 hover:-translate-y-0.5 p-4 sm:p-5 rounded-2xl transition-all duration-200">
+                        <LeaderboardIcon className="text-indigo-400 w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
                         <div className="text-left">
                             <h3 className="text-base sm:text-lg font-bold text-slate-200 group-hover:text-indigo-300 transition-colors leading-tight">Leaderboard</h3>
                             <p className="text-slate-400 text-xs sm:text-sm mt-1">Classement et historique</p>
                         </div>
                     </Link>
 
-                    <Link href="/roster" className="group flex items-center gap-4 bg-violet-500/10 border border-violet-500/20 group-hover:bg-violet-500/20 shadow-lg hover:shadow-violet-500/20 p-4 sm:p-5 rounded-2xl transition-all">
-                        <RosterIcon className="text-violet-400 w-6 h-6 group-hover:scale-110 transition-transform" />
+                    <Link href="/roster" className="group flex items-center gap-4 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 shadow-lg hover:shadow-violet-500/20 hover:-translate-y-0.5 p-4 sm:p-5 rounded-2xl transition-all duration-200">
+                        <RosterIcon className="text-violet-400 w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
                         <div className="text-left">
                             <h3 className="text-base sm:text-lg font-bold text-slate-200 group-hover:text-violet-300 transition-colors leading-tight">Roster</h3>
                             <p className="text-slate-400 text-xs sm:text-sm mt-1">Profils et statistiques</p>
