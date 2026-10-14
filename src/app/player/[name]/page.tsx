@@ -93,11 +93,25 @@ export default async function PlayerProfilePage(props: Props) {
         tabContent = <StatsView games={allStatsGames} teamView={false}/>;
     }
     else {
-        const totalGamesCount = await prisma.game.count({ where: whereClause });
+        const isBo3 = currentQueue !== "ALL" && currentQueue.includes("BO3");
+        const historyWhereClause: any = { ...whereClause };
+
+        if (isBo3) {
+            historyWhereClause.mmrDelta = { not: null };
+        } else if (currentQueue === "ALL") {
+            historyWhereClause.NOT = [
+                {
+                    queueId: { contains: "BO3" },
+                    mmrDelta: null
+                }
+            ];
+        }
+
+        const totalGamesCount = await prisma.game.count({ where: historyWhereClause });
         const totalPages = Math.ceil(totalGamesCount / PAGE_SIZE) || 1;
 
         const historyGames = await prisma.game.findMany({
-            where: whereClause,
+            where: historyWhereClause,
             orderBy: { startedAt: "desc" },
             skip: (currentPage - 1) * PAGE_SIZE,
             take: PAGE_SIZE,

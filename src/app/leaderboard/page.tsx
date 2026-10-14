@@ -49,9 +49,11 @@ async function getLeaderboard(queueId: string, teamId: string) {
 }
 
 async function getRecentHistory(queueId: string, teamId: string) {
+  const isBo3 = queueId.includes("BO3");
   return prisma.game.findMany({
     where: {
       queueId: queueId,
+      ...(isBo3 ? { mmrDelta: { not: null } } : {}),
       user: {
         teams: {
           some: { teamId: teamId }
