@@ -20,8 +20,8 @@ RUN npx prisma generate
 # Construit l'application Next.js
 RUN npm run build
 
-# Synchronise la base de données puis lance le serveur
-CMD npx prisma db push --accept-data-loss && npm start
+# Synchronise la base de données de manière sécurisée puis lance le serveur
+CMD npx prisma db push && npm start
 
 # Expose le port 3000
 EXPOSE 3000

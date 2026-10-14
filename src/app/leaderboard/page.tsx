@@ -32,7 +32,7 @@ async function getLeaderboard(queueId: string, teamId: string) {
       name: true,
       image: true,
       _count: { select: { games: { where: { queueId } } } },
-      games: { where: { queueId }, orderBy: { startedAt: "desc" }, take: 1, select: { mmrAfter: true } },
+      games: { where: { queueId, mmrAfter: { not: null } }, orderBy: { startedAt: "desc" }, take: 1, select: { mmrAfter: true } },
     },
   });
 
@@ -91,7 +91,7 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
   const searchParams = await props.searchParams;
   const queues = await getAvailableQueues(teamId);
 
-  const defaultQueue = process.env.NEXT_PUBLIC_DEFAULT_SEASON_QUEUE || "Core BO1 - Set 13";
+  const defaultQueue = process.env.NEXT_PUBLIC_DEFAULT_SEASON_QUEUE || "Core BO1 - Set 14";
   const currentQueue = searchParams.queue || (queues.includes(defaultQueue) ? defaultQueue : queues[0] || "");
 
   const leaderboard = currentQueue ? await getLeaderboard(currentQueue, teamId) : [];

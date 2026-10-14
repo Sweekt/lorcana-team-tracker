@@ -14,10 +14,10 @@ type GameRowProps = {
     game: {
         id: string;
         result: string;
-        mmrDelta: number;
+        mmrDelta: number | null;
         wentFirst: boolean | null;
         myDeckColors: string | null;
-        mmrBefore: number;
+        mmrBefore: number | null;
         oppDeckColors: string | null;
         oppDisplayName: string;
         replayUrl: string | null;
@@ -63,6 +63,13 @@ export default function GameRow({ game }: GameRowProps) {
         toast.success("Decklist copiée dans le presse-papier !");
     };
 
+    const renderResultText = () => {
+        if (game.mmrDelta !== null && game.mmrDelta !== undefined) {
+            return isWin ? `WIN (+${game.mmrDelta})` : `LOSS (${game.mmrDelta})`;
+        }
+        return isWin ? "WIN" : "LOSS";
+    };
+
     return (
         <>
             <tr className="hover:bg-slate-800/30 transition-colors group">
@@ -71,7 +78,7 @@ export default function GameRow({ game }: GameRowProps) {
                 <td className="py-3 px-4">
                   <span
                       className={`whitespace-nowrap px-2.5 py-1 rounded-md text-xs font-bold border ${isWin ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>
-                    {isWin ? "WIN (+" : "LOSS ("}{game.mmrDelta})
+                    {renderResultText()}
                   </span>
                 </td>
 
@@ -95,12 +102,14 @@ export default function GameRow({ game }: GameRowProps) {
                 {/* Joueur */}
                 <td className="py-3 px-4 font-medium">
                     <Link
-                        href={`/player/${encodeURIComponent(game.user?.name)}`}
+                        href={`/player/${encodeURIComponent(game.user?.name || "")}`}
                         className={`text-slate-200 hover:text-indigo-400 hover:underline transition-colors`}
                     >
-                        {game.user?.name.charAt(0).toUpperCase() + game.user?.name.slice(1)}
+                        {game.user?.name ? game.user.name.charAt(0).toUpperCase() + game.user.name.slice(1) : "Inconnu"}
                     </Link>
-                    <span> ({game.mmrBefore})</span>
+                    {game.mmrBefore !== null && game.mmrBefore !== undefined && (
+                        <span> ({game.mmrBefore})</span>
+                    )}
                 </td>
 
                 {/* Matchup (Pastilles) */}

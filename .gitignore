@@ -11,6 +11,8 @@ node_modules
 .next/
 out/
 build/
+*.tsbuildinfo
+.superpowers/
 
 # Fichiers d'environnement (LE PLUS IMPORTANT)
 .env

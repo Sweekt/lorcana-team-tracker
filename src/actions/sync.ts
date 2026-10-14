@@ -108,7 +108,7 @@ export async function syncTeamHistory(targetUserId?: string) {
             if (userInsertedCount > 0 && queuesUpdated.size > 0) {
                 for (const queue of Array.from(queuesUpdated)) {
                     const latestGame = await prisma.game.findFirst({
-                        where: { userId: user.id, queueId: queue },
+                        where: { userId: user.id, queueId: queue, mmrAfter: { not: null } },
                         orderBy: { startedAt: "desc" }
                     });
 
@@ -121,6 +121,12 @@ export async function syncTeamHistory(targetUserId?: string) {
                             where: { userId_queueId: { userId: user.id, queueId: queue } },
                             update: { mmr: Math.round(latestGame.mmrAfter), gamesPlayed: totalGames },
                             create: { userId: user.id, queueId: queue, mmr: Math.round(latestGame.mmrAfter), gamesPlayed: totalGames }
+                        });
+                    } else if (totalGames > 0) {
+                        await prisma.userQueueStat.upsert({
+                            where: { userId_queueId: { userId: user.id, queueId: queue } },
+                            update: { gamesPlayed: totalGames },
+                            create: { userId: user.id, queueId: queue, mmr: 1000, gamesPlayed: totalGames }
                         });
                     }
                 }

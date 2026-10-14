@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "import:cards": "tsx src/scripts/import-cards.ts"
+    "import:cards": "tsx src/scripts/import-cards.ts",
+    "clean:matches": "tsx src/scripts/clean-match-history.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
