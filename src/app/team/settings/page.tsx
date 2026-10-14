@@ -40,10 +40,13 @@ export default async function TeamSettingsPage() {
         distinct: ['queueId']
     });
 
-    const availableQueues = distinctQueues.map(q => ({
-        id: q.queueId as string,
-        label: q.queueId as string
-    }));
+    const allQueueIds = new Set<string>();
+    distinctQueues.forEach(q => { if (q.queueId) allQueueIds.add(q.queueId); });
+    (team.activeQueues || []).forEach(q => allQueueIds.add(q));
+
+    const availableQueues = Array.from(allQueueIds)
+        .map(id => ({ id, label: id }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
 
     const inviteLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/invite/${team.inviteToken}`;
 

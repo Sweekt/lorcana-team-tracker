@@ -56,7 +56,8 @@ export default async function PlayerProfilePage(props: Props) {
 
     const playerQueues = rawQueues
         .map(q => q.queueId as string)
-        .filter(queueId => teamQueues.has(queueId));
+        .filter(queueId => teamQueues.has(queueId))
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
     const allGamesAsc = await prisma.game.findMany({
         where: {

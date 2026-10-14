@@ -20,7 +20,7 @@ async function getAvailableQueues(teamId: string) {
   });
 
   const queues = team?.activeQueues || [];
-  return queues.sort((a, b) => a.localeCompare(b));
+  return queues.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 }
 
 async function getLeaderboard(queueId: string, teamId: string) {
