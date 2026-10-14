@@ -11,6 +11,14 @@ import prisma from "@/lib/prisma";
 export const metadata : Metadata = {
   title: "LoreTracker",
   description: "Suivez le classement et l'historique de votre équipe sur Duels.ink",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.png",
+  },
 };
 
 export default async function RootLayout({
