@@ -65,6 +65,11 @@ export function buildTableCreatePayload(params: BuildTableCreatePayloadParams): 
 export async function createDuelsTableForMatch(
     params: BuildTableCreatePayloadParams
 ): Promise<DuelsTableCreateResult | null> {
+    if (!params.p1DuelsId?.trim() || !params.p2DuelsId?.trim()) {
+        console.warn("[DuelsBot] Identifiants joueurs manquants ou invalides.");
+        return null;
+    }
+
     const apiKey = process.env.DUELS_ORGANIZER_API_KEY?.trim();
     if (!apiKey) {
         console.warn("[DuelsBot] DUELS_ORGANIZER_API_KEY non configurée. Impossible de créer la table privée.");
@@ -139,7 +144,7 @@ export async function checkDuelsTableStatus(
         }
 
         const status = view.status;
-        const finished = status === "completed" || view.game?.status === "finished";
+        const finished = view.game ? view.game.status === "finished" : status === "cancelled";
         const winnerDuelsId = view.game?.winnerUserId || undefined;
 
         return {

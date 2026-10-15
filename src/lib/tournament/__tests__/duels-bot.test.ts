@@ -223,3 +223,59 @@ test("checkDuelsTableStatus returns null on 404 or network failure", async () =>
         globalThis.fetch = oldFetch;
     }
 });
+
+test("checkDuelsTableStatus returns finished: false when table is completed but game is still in_progress", async () => {
+    const oldFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () => {
+        return new Response(
+            JSON.stringify({
+                view: {
+                    id: "table_ongoing_123",
+                    status: "completed",
+                    game: {
+                        status: "in_progress",
+                        turnNumber: 3,
+                    },
+                },
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+    }) as any;
+
+    try {
+        const status = await checkDuelsTableStatus("table_ongoing_123");
+        assert.deepStrictEqual(status, {
+            status: "completed",
+            finished: false,
+            winnerDuelsId: undefined,
+        });
+    } finally {
+        globalThis.fetch = oldFetch;
+    }
+});
+
+test("createDuelsTableForMatch returns null with warning when player IDs are missing or empty", async () => {
+    const oldKey = process.env.DUELS_ORGANIZER_API_KEY;
+    process.env.DUELS_ORGANIZER_API_KEY = "test_key";
+
+    try {
+        const missingP1 = await createDuelsTableForMatch({
+            p1DuelsId: "",
+            p2DuelsId: "u_bob",
+        });
+        assert.strictEqual(missingP1, null);
+
+        const missingP2 = await createDuelsTableForMatch({
+            p1DuelsId: "u_alice",
+            p2DuelsId: "   ",
+        });
+        assert.strictEqual(missingP2, null);
+    } finally {
+        if (oldKey !== undefined) {
+            process.env.DUELS_ORGANIZER_API_KEY = oldKey;
+        } else {
+            delete process.env.DUELS_ORGANIZER_API_KEY;
+        }
+    }
+});
