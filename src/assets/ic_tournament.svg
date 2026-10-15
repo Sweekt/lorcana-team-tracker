@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg fill="currentColor" width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19 4h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v1H5a3 3 0 0 0-3 3v2a5 5 0 0 0 4.5 4.97A6.002 6.002 0 0 0 11 17.91V20H8a1 1 0 1 0 0 2h8a1 1 0 1 0 0-2h-3v-2.09a6.002 6.002 0 0 0 4.5-4.94A5 5 0 0 0 22 9V7a3 3 0 0 0-3-3zM4 9V7a1 1 0 0 1 1-1h2v4.88A3.003 3.003 0 0 1 4 9zm15 1.88V6h1a1 1 0 0 1 1 1v2a3.003 3.003 0 0 1-2 2.88z"/>
+</svg>

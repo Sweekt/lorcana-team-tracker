@@ -8,6 +8,7 @@ import { switchTeamAction } from "@/actions/team";
 
 import LeaderboardIcon from "@/assets/ic_leaderboard.svg";
 import RosterIcon from "@/assets/ic_roster.svg";
+import TournamentIcon from "@/assets/ic_tournament.svg";
 import AdminIcon from "@/assets/ic_admin.svg";
 
 import TeamSwitcherDesktop from "@/components/TeamSwitcherDesktop";
@@ -38,6 +39,7 @@ export default function Navigation({ teams, activeTeamId }: NavigationProps) {
     const navItems: NavItem[] = [
         { name: "Leaderboard", icon: <LeaderboardIcon className="w-5 h-5 sm:w-4 sm:h-4" />, path: "/leaderboard" },
         { name: "Roster", icon: <RosterIcon className="w-5 h-5 sm:w-4 sm:h-4" />, path: "/roster" },
+        { name: "Tournois", icon: <TournamentIcon className="w-5 h-5 sm:w-4 sm:h-4" />, path: "/tournaments" },
         { name: "Paramètres", icon: <AdminIcon className="w-5 h-5 sm:w-4 sm:h-4" />, path: "/settings" },
     ];
 
