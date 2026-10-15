@@ -97,7 +97,7 @@ test("exchangeDuelsCode parses successful token response correctly", async () =>
     const mockFetch: typeof fetch = async (input, init) => {
         assert.strictEqual(input.toString(), "https://duels.ink/api/oauth/token");
         assert.strictEqual(init?.method, "POST");
-        assert.strictEqual(init?.headers?.["Content-Type"], "application/x-www-form-urlencoded");
+        assert.strictEqual(new Headers(init?.headers).get("Content-Type"), "application/x-www-form-urlencoded");
 
         return new Response(JSON.stringify({
             access_token: "9b2e1234567890",

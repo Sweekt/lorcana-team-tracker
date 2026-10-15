@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
-import { exchangeDuelsCode, linkDuelsAccountToUser } from "@/lib/duels-oauth";
+import { exchangeDuelsCode, linkDuelsAccountToUser, findUserForSession, normalizeAppUrl } from "@/lib/duels-oauth";
 
 export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
-    const appUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    const appUrl = normalizeAppUrl(process.env.NEXTAUTH_URL || request.nextUrl.origin);
     const settingsUrl = new URL("/settings", appUrl);
 
     if (!session?.user?.email && !session?.user?.id) {
-        return NextResponse.redirect(new URL("/login", request.url));
+        return NextResponse.redirect(new URL("/", request.url));
     }
 
     const searchParams = request.nextUrl.searchParams;
@@ -86,16 +86,8 @@ export async function GET(request: NextRequest) {
             redirectUri,
         });
 
-        // Récupération de l'ID utilisateur en base
-        const user = await prisma.user.findFirst({
-            where: {
-                OR: [
-                    session.user.id ? { id: session.user.id } : {},
-                    session.user.email ? { email: session.user.email } : {},
-                ],
-            },
-            select: { id: true },
-        });
+        // Récupération de l'ID utilisateur en base de manière stricte
+        const user = await findUserForSession(prisma, session.user);
 
         if (!user) {
             settingsUrl.searchParams.set("duels_error", "user_not_found");

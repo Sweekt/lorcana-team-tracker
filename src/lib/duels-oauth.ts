@@ -221,3 +221,38 @@ export async function handleSync401(
         console.error(`Failed to mark OAuth token expired for user ${userId}:`, err);
     }
 }
+
+/**
+ * Recherche l'utilisateur de manière stricte par ID ou email (sans clause OR vide).
+ */
+export async function findUserForSession(
+    prismaClient: {
+        user: {
+            findUnique: (args: any) => Promise<any>;
+        };
+    },
+    sessionUser: { id?: string | null; email?: string | null }
+) {
+    if (sessionUser.id) {
+        return prismaClient.user.findUnique({
+            where: { id: sessionUser.id },
+            select: { id: true },
+        });
+    }
+
+    if (sessionUser.email) {
+        return prismaClient.user.findUnique({
+            where: { email: sessionUser.email },
+            select: { id: true },
+        });
+    }
+
+    return null;
+}
+
+/**
+ * Normalise l'URL de base de l'application en supprimant tout slash final éventuel.
+ */
+export function normalizeAppUrl(url: string): string {
+    return url.replace(/\/+$/, "");
+}

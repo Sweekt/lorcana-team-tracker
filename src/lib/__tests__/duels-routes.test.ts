@@ -60,3 +60,30 @@ test("linkDuelsAccountToUser executes atomic transfer clearing old user and assi
     assert.strictEqual(result.duelsUserId, "u_duels_ashe");
     assert.strictEqual(result.duelsUsername, "Ashe");
 });
+
+test("findUserForSession queries strictly by id when id is present", async () => {
+    let queriedWhere: any = null;
+    const mockPrisma = {
+        user: {
+            findUnique: async (args: any) => {
+                queriedWhere = args.where;
+                return { id: args.where.id };
+            },
+        },
+    };
+
+    const user = await (import("../duels-oauth") as any).then((m: any) =>
+        m.findUserForSession(mockPrisma, { id: "user_target_id", email: null })
+    );
+
+    assert.deepStrictEqual(queriedWhere, { id: "user_target_id" });
+    assert.strictEqual(user?.id, "user_target_id");
+});
+
+test("normalizeAppUrl removes trailing slashes", async () => {
+    const { normalizeAppUrl } = await import("../duels-oauth") as any;
+    assert.strictEqual(normalizeAppUrl("https://tracker.com/"), "https://tracker.com");
+    assert.strictEqual(normalizeAppUrl("https://tracker.com///"), "https://tracker.com");
+    assert.strictEqual(normalizeAppUrl("http://localhost:3000"), "http://localhost:3000");
+});
+
