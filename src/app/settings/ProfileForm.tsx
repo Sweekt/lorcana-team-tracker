@@ -1,10 +1,10 @@
 "use client";
 
-import { updateUserProfile } from "@/actions/user";
+import { updateUserProfile, disconnectDuelsAccount } from "@/actions/user";
 import { leaveTeamAction } from "@/actions/team";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import CreateTeamForm from "@/components/CreateTeamForm";
 
 type TeamMembership = {
@@ -21,14 +21,33 @@ type UserProps = {
     id: string;
     lorcanaApiKey: string | null;
     dreambornUrl: string | null;
+    duelsUserId?: string | null;
+    duelsUsername?: string | null;
+    duelsConnected: boolean;
+    duelsTokenExpiresAt?: string | null;
+    isDuelsExpired: boolean;
     memberships: TeamMembership[];
 };
 
 export default function ProfileForm({ user }: { user: UserProps }) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (searchParams.get("duels_linked") === "true") {
+            toast.success("Compte Duels.ink lié avec succès !");
+            router.replace("/settings");
+        } else if (searchParams.get("duels_cancelled") === "true") {
+            toast.info("Liaison Duels.ink annulée.");
+            router.replace("/settings");
+        } else if (searchParams.get("duels_error")) {
+            toast.error(`Erreur de liaison Duels.ink : ${searchParams.get("duels_error")}`);
+            router.replace("/settings");
+        }
+    }, [searchParams, router]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -46,6 +65,20 @@ export default function ProfileForm({ user }: { user: UserProps }) {
         setIsLoading(false);
     };
 
+    const handleDisconnectDuels = () => {
+        if (!confirm("Voulez-vous vraiment dissocier votre compte Duels.ink ?")) return;
+
+        startTransition(async () => {
+            const result = await disconnectDuelsAccount();
+            if (result?.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Compte Duels.ink dissocié.");
+                router.refresh();
+            }
+        });
+    };
+
     const handleLeaveTeam = (teamId: string, teamName: string) => {
         if (!confirm(`Êtes-vous sûr de vouloir quitter l'équipe "${teamName}" ?`)) return;
 
@@ -55,35 +88,128 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                 toast.error(result.error);
             } else {
                 toast.success(`Vous avez quitté ${teamName}.`);
-                router.refresh(); // Rafraîchit la page pour mettre à jour la liste
+                router.refresh();
             }
         });
     };
 
+    const formattedExpiresAt = user.duelsTokenExpiresAt
+        ? new Date(user.duelsTokenExpiresAt).toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        })
+        : null;
+
     return (
         <div className="space-y-6">
-            {/* BLOC 1 : FORMULAIRE PROFIL */}
-            <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-sm space-y-6">
-                <h2 className="text-xl font-bold text-slate-100 mb-4">Paramètres du compte</h2>
+            {/* BLOC 1 : CONNEXION DUELS.INK */}
+            <div className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-sm space-y-5">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-100">Compte Duels.ink</h2>
+                        <p className="text-xs text-slate-400 mt-1">
+                            Synchronisation automatique des matchs, statistiques et decklists.
+                        </p>
+                    </div>
 
-                <div>
-                    <label htmlFor="lorcanaApiKey" className="block text-sm font-medium text-slate-300 mb-2">
-                        Clé API Duels.ink
-                    </label>
-                    <input
-                        type="password"
-                        id="lorcanaApiKey"
-                        name="lorcanaApiKey"
-                        defaultValue={user.lorcanaApiKey || ""}
-                        placeholder="eyJhbGciOiJIUzI1NiIsInR..."
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono text-sm"
-                    />
-                    <p className="mt-2 text-xs text-slate-500">
-                        Cette clé permet de synchroniser automatiquement votre historique de matchs. Elle est chiffrée et privée.
-                    </p>
+                    {user.duelsConnected && !user.isDuelsExpired && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            Connecté
+                        </span>
+                    )}
+
+                    {user.duelsConnected && user.isDuelsExpired && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                            Expiré
+                        </span>
+                    )}
+
+                    {!user.duelsConnected && user.lorcanaApiKey && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            Clé manuelle
+                        </span>
+                    )}
                 </div>
 
-                <div className="pt-4 border-t border-slate-800">
+                {user.duelsConnected && !user.isDuelsExpired ? (
+                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <p className="text-sm text-slate-300 font-medium">
+                                Joueur : <span className="text-indigo-400 font-semibold">{user.duelsUsername || user.duelsUserId}</span>
+                            </p>
+                            {formattedExpiresAt && (
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Connexion valide jusqu'au {formattedExpiresAt}
+                                </p>
+                            )}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleDisconnectDuels}
+                            disabled={isPending}
+                            className="text-xs text-red-400 hover:text-red-300 font-medium px-3.5 py-2 rounded-md bg-red-500/10 hover:bg-red-500/20 transition-colors self-start sm:self-auto disabled:opacity-50"
+                        >
+                            Dissocier le compte
+                        </button>
+                    </div>
+                ) : user.duelsConnected && user.isDuelsExpired ? (
+                    <div className="bg-orange-950/20 border border-orange-800/40 rounded-lg p-4 space-y-3">
+                        <p className="text-sm text-orange-300">
+                            Votre autorisation Duels.ink a expiré ou a été révoquée. Veuillez la renouveler en un clic.
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <a
+                                href="/api/oauth/duels/start"
+                                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                            >
+                                Reconnecter mon compte Duels.ink
+                            </a>
+                            <button
+                                type="button"
+                                onClick={handleDisconnectDuels}
+                                disabled={isPending}
+                                className="text-xs text-slate-400 hover:text-slate-200 px-3 py-2 rounded-md transition-colors"
+                            >
+                                Dissocier
+                            </button>
+                        </div>
+                    </div>
+                ) : !user.duelsConnected && user.lorcanaApiKey ? (
+                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-4 space-y-3">
+                        <p className="text-xs text-slate-300">
+                            Vous utilisez actuellement une ancienne clé API manuelle. Nous vous recommandons d'associer directement votre compte en un clic pour une meilleure fiabilité.
+                        </p>
+                        <a
+                            href="/api/oauth/duels/start"
+                            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                        >
+                            Associer mon compte Duels.ink
+                        </a>
+                    </div>
+                ) : (
+                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-lg p-5 space-y-3">
+                        <p className="text-sm text-slate-300">
+                            Associez votre compte Duels.ink en un clic pour synchroniser vos parties avec votre équipe sans avoir à manipuler de clé API.
+                        </p>
+                        <a
+                            href="/api/oauth/duels/start"
+                            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
+                        >
+                            Lier mon compte Duels.ink
+                        </a>
+                    </div>
+                )}
+            </div>
+
+            {/* BLOC 2 : FORMULAIRE PROFIL & OPTIONS AVANCÉES */}
+            <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-sm space-y-6">
+                <h2 className="text-xl font-bold text-slate-100">Autres Paramètres</h2>
+
+                <div>
                     <label htmlFor="dreambornUrl" className="block text-sm font-medium text-slate-300 mb-2">
                         Lien Profil Dreamborn
                     </label>
@@ -93,30 +219,57 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                         name="dreambornUrl"
                         defaultValue={user.dreambornUrl || ""}
                         placeholder="https://dreamborn.ink/creators/..."
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
                     />
                 </div>
 
-                <div className="pt-4 flex justify-end">
+                {/* Section dépliable pour configuration avancée de la clé API manuelle */}
+                <details className="group border-t border-slate-800 pt-4">
+                    <summary className="text-xs text-slate-400 hover:text-slate-300 cursor-pointer font-medium list-none flex items-center justify-between">
+                        <span>Options avancées (Clé API manuelle)</span>
+                        <span className="text-slate-600 group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+
+                    <div className="mt-4 space-y-2">
+                        <label htmlFor="lorcanaApiKey" className="block text-xs font-medium text-slate-400">
+                            Clé API Duels.ink personnelle (secours)
+                        </label>
+                        <input
+                            type="password"
+                            id="lorcanaApiKey"
+                            name="lorcanaApiKey"
+                            defaultValue={user.lorcanaApiKey || ""}
+                            placeholder="f3a1... (96 caractères hexadécimaux)"
+                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono text-xs"
+                        />
+                        <p className="text-xs text-slate-500">
+                            Cette clé de secours n'est utile que si vous préférez ne pas utiliser la connexion en 1 clic ci-dessus.
+                        </p>
+                    </div>
+                </details>
+
+                <div className="pt-2 flex justify-end">
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm"
                     >
                         {isLoading ? "Sauvegarde..." : "Enregistrer les modifications"}
                     </button>
                 </div>
             </form>
 
-            {/* BLOC 2 : GESTION DES ÉQUIPES */}
+            {/* BLOC 3 : GESTION DES ÉQUIPES */}
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-sm space-y-6">
-                <h2 className="text-xl font-bold text-slate-100">Mes Équipes</h2>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="text-sm bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 px-3 py-1.5 rounded-md font-medium transition-colors"
-                >
-                    + Créer une équipe
-                </button>
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-slate-100">Mes Équipes</h2>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="text-sm bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 px-3 py-1.5 rounded-md font-medium transition-colors"
+                    >
+                        + Créer une équipe
+                    </button>
+                </div>
 
                 {user.memberships.length === 0 ? (
                     <p className="text-slate-400 text-sm">Vous ne faites partie d'aucune équipe pour le moment.</p>
@@ -158,8 +311,6 @@ export default function ProfileForm({ user }: { user: UserProps }) {
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
                     <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-
-                        {/* En-tête de la modale */}
                         <div className="flex items-center justify-between p-4 border-b border-slate-800">
                             <h3 className="font-bold text-slate-100">Nouvelle équipe</h3>
                             <button
@@ -172,17 +323,14 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                             </button>
                         </div>
 
-                        {/* Corps de la modale (Ton composant extrait) */}
                         <div className="p-6">
                             <CreateTeamForm
                                 userId={user.id}
                                 onSuccess={() => {
                                     setIsCreateModalOpen(false);
-                                    // Optionnel : router.refresh() pour mettre à jour la liste des équipes
                                 }}
                             />
                         </div>
-
                     </div>
                 </div>
             )}

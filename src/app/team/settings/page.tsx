@@ -15,7 +15,19 @@ export default async function TeamSettingsPage() {
         where: { id: teamId },
         include: {
             members: {
-                include: { user: { select: { id: true, name: true, image: true, lorcanaApiKey: true } } },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            image: true,
+                            lorcanaApiKey: true,
+                            duelsAccessToken: true,
+                            duelsTokenExpiresAt: true,
+                            duelsUsername: true,
+                        }
+                    }
+                },
                 orderBy: { role: "asc" }
             }
         }

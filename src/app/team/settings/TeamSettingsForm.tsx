@@ -123,40 +123,69 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
                 </div>
             </section>
 
-            {/* SECTION MEMBRES MISE À JOUR */}
+            {/* SECTION MEMBRES */}
             <section className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-lg font-bold text-slate-200 mb-4">Membres de l'équipe</h2>
                 <div className="space-y-3">
-                    {team.members.map((member: any) => (
-                        <div key={member.userId} className={`flex items-center justify-between p-3 bg-slate-950 rounded-lg border ${member.user.lorcanaApiKey ? `border-slate-800/50` : `border-red-500`}`}>
-                            <div className="flex items-center gap-3">
-                                <img src={member.user.image || ""} alt="" className="w-8 h-8 rounded-full border border-slate-700" />
-                                <div>
-                                    <p className="text-slate-200 font-medium leading-none">{member.user.name}</p>
-                                    <p className="text-xs text-slate-500 mt-1">{member.role === "ADMIN" ? "👑 Capitaine" : "Membre"}</p>
-                                </div>
-                            </div>
+                    {team.members.map((member: any) => {
+                        const isOAuth = Boolean(member.user.duelsAccessToken);
+                        const isOAuthValid = isOAuth && (!member.user.duelsTokenExpiresAt || new Date(member.user.duelsTokenExpiresAt).getTime() > Date.now());
+                        const isManual = Boolean(member.user.lorcanaApiKey && member.user.lorcanaApiKey.trim().length > 0);
 
-                            {member.role !== "ADMIN" && (
-                                <div className="flex gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleTransfer(member.userId, member.user.name)}
-                                        className="text-xs text-indigo-400 hover:text-indigo-300 font-medium px-3 py-1.5 rounded bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors"
-                                    >
-                                        Nommer Capitaine
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleKick(member.userId, member.user.name)}
-                                        className="text-xs text-red-400 hover:text-red-300 font-medium px-3 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 transition-colors"
-                                    >
-                                        Expulser
-                                    </button>
+                        let badgeColor = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                        let badgeText = "Non connecté";
+                        let borderClass = "border-rose-500/30";
+
+                        if (isOAuthValid) {
+                            badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                            badgeText = member.user.duelsUsername ? `Lié (${member.user.duelsUsername})` : "Lié";
+                            borderClass = "border-slate-800/60 hover:border-slate-700";
+                        } else if (isManual) {
+                            badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                            badgeText = "Clé manuelle";
+                            borderClass = "border-slate-800/60 hover:border-slate-700";
+                        } else if (isOAuth) {
+                            badgeColor = "bg-orange-500/10 text-orange-400 border-orange-500/20";
+                            badgeText = "Expiré";
+                            borderClass = "border-orange-500/30";
+                        }
+
+                        return (
+                            <div key={member.userId} className={`flex items-center justify-between p-3 bg-slate-950 rounded-lg border ${borderClass} transition-colors`}>
+                                <div className="flex items-center gap-3">
+                                    <img src={member.user.image || ""} alt="" className="w-8 h-8 rounded-full border border-slate-700" />
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-slate-200 font-medium leading-none">{member.user.name}</p>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${badgeColor}`}>
+                                                {badgeText}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-1">{member.role === "ADMIN" ? "👑 Capitaine" : "Membre"}</p>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+
+                                {member.role !== "ADMIN" && (
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleTransfer(member.userId, member.user.name)}
+                                            className="text-xs text-indigo-400 hover:text-indigo-300 font-medium px-3 py-1.5 rounded bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors"
+                                        >
+                                            Nommer Capitaine
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleKick(member.userId, member.user.name)}
+                                            className="text-xs text-red-400 hover:text-red-300 font-medium px-3 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 transition-colors"
+                                        >
+                                            Expulser
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 

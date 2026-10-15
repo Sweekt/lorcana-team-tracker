@@ -36,6 +36,11 @@ export default async function SettingsPage() {
         id: userFromDb.id,
         lorcanaApiKey: userFromDb.lorcanaApiKey,
         dreambornUrl: userFromDb.dreambornUrl,
+        duelsUserId: userFromDb.duelsUserId,
+        duelsUsername: userFromDb.duelsUsername,
+        duelsConnected: Boolean(userFromDb.duelsAccessToken),
+        duelsTokenExpiresAt: userFromDb.duelsTokenExpiresAt ? userFromDb.duelsTokenExpiresAt.toISOString() : null,
+        isDuelsExpired: Boolean(userFromDb.duelsTokenExpiresAt && userFromDb.duelsTokenExpiresAt.getTime() <= Date.now()),
         memberships: userFromDb.teams
     };
 
