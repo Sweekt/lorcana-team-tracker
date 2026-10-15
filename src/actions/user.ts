@@ -7,24 +7,36 @@ import { revalidatePath } from "next/cache";
 
 export async function updateUserProfile(formData: FormData) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session?.user?.email && !session?.user?.id) {
         return { error: "Vous devez être connecté pour faire cela." };
     }
 
-    const lorcanaApiKey = formData.get("lorcanaApiKey") as string;
-    const dreambornUrl = formData.get("dreambornUrl") as string;
+    const hasApiKey = formData.has("lorcanaApiKey");
+    const hasDreamborn = formData.has("dreambornUrl");
+
+    const updateData: { lorcanaApiKey?: string | null; dreambornUrl?: string | null } = {};
+
+    if (hasApiKey) {
+        const lorcanaApiKey = formData.get("lorcanaApiKey") as string;
+        updateData.lorcanaApiKey = lorcanaApiKey?.trim() || null;
+    }
+
+    if (hasDreamborn) {
+        const dreambornUrl = formData.get("dreambornUrl") as string;
+        updateData.dreambornUrl = dreambornUrl?.trim() || null;
+    }
 
     try {
         await prisma.user.update({
-            where: { email: session.user.email },
-            data: {
-                lorcanaApiKey: lorcanaApiKey?.trim() || null,
-                dreambornUrl: dreambornUrl?.trim() || null,
-            }
+            where: {
+                ...(session.user.id ? { id: session.user.id } : { email: session.user.email! }),
+            },
+            data: updateData,
         });
 
         // On rafraîchit le cache pour que les modifications soient visibles partout
         revalidatePath("/settings");
+        revalidatePath("/team/settings");
         revalidatePath("/");
 
         return { success: true };

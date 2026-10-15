@@ -49,7 +49,7 @@ export default function ProfileForm({ user }: { user: UserProps }) {
         }
     }, [searchParams, router]);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleManualKeySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
 
@@ -59,7 +59,25 @@ export default function ProfileForm({ user }: { user: UserProps }) {
         if (result.error) {
             toast.error(result.error);
         } else {
-            toast.success("Profil mis à jour avec succès !");
+            toast.success("Clé API Duels.ink mise à jour !");
+            router.refresh();
+        }
+
+        setIsLoading(false);
+    };
+
+    const handleDreambornSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        const formData = new FormData(e.currentTarget);
+        const result = await updateUserProfile(formData);
+
+        if (result.error) {
+            toast.error(result.error);
+        } else {
+            toast.success("Profil Dreamborn mis à jour avec succès !");
+            router.refresh();
         }
 
         setIsLoading(false);
@@ -103,7 +121,7 @@ export default function ProfileForm({ user }: { user: UserProps }) {
 
     return (
         <div className="space-y-6">
-            {/* BLOC 1 : CONNEXION DUELS.INK */}
+            {/* BLOC 1 : CONNEXION DUELS.INK & CLÉ MANUELLE */}
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-sm space-y-5">
                 <div className="flex items-center justify-between">
                     <div>
@@ -203,11 +221,45 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                         </a>
                     </div>
                 )}
+
+                {/* Section dépliable pour configuration avancée de la clé API manuelle DANS le bloc Duels.ink */}
+                <details className="group border-t border-slate-800/80 pt-4">
+                    <summary className="text-xs text-slate-400 hover:text-slate-300 cursor-pointer font-medium list-none flex items-center justify-between">
+                        <span>Option avancée (Clé API manuelle de secours)</span>
+                        <span className="text-slate-600 group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+
+                    <form onSubmit={handleManualKeySubmit} className="mt-4 space-y-3">
+                        <label htmlFor="lorcanaApiKey" className="block text-xs font-medium text-slate-400">
+                            Clé API Duels.ink personnelle
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="password"
+                                id="lorcanaApiKey"
+                                name="lorcanaApiKey"
+                                defaultValue={user.lorcanaApiKey || ""}
+                                placeholder="f3a1... (96 caractères hexadécimaux)"
+                                className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono text-xs"
+                            />
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                            >
+                                Enregistrer
+                            </button>
+                        </div>
+                        <p className="text-xs text-slate-500">
+                            Cette clé de secours n'est utile que si vous préférez ne pas utiliser la connexion en 1 clic ci-dessus.
+                        </p>
+                    </form>
+                </details>
             </div>
 
-            {/* BLOC 2 : FORMULAIRE PROFIL & OPTIONS AVANCÉES */}
-            <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-sm space-y-6">
-                <h2 className="text-xl font-bold text-slate-100">Autres Paramètres</h2>
+            {/* BLOC 2 : PROFIL DREAMBORN */}
+            <form onSubmit={handleDreambornSubmit} className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-sm space-y-5">
+                <h2 className="text-xl font-bold text-slate-100">Profil Dreamborn</h2>
 
                 <div>
                     <label htmlFor="dreambornUrl" className="block text-sm font-medium text-slate-300 mb-2">
@@ -223,38 +275,13 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                     />
                 </div>
 
-                {/* Section dépliable pour configuration avancée de la clé API manuelle */}
-                <details className="group border-t border-slate-800 pt-4">
-                    <summary className="text-xs text-slate-400 hover:text-slate-300 cursor-pointer font-medium list-none flex items-center justify-between">
-                        <span>Options avancées (Clé API manuelle)</span>
-                        <span className="text-slate-600 group-open:rotate-180 transition-transform">▼</span>
-                    </summary>
-
-                    <div className="mt-4 space-y-2">
-                        <label htmlFor="lorcanaApiKey" className="block text-xs font-medium text-slate-400">
-                            Clé API Duels.ink personnelle (secours)
-                        </label>
-                        <input
-                            type="password"
-                            id="lorcanaApiKey"
-                            name="lorcanaApiKey"
-                            defaultValue={user.lorcanaApiKey || ""}
-                            placeholder="f3a1... (96 caractères hexadécimaux)"
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono text-xs"
-                        />
-                        <p className="text-xs text-slate-500">
-                            Cette clé de secours n'est utile que si vous préférez ne pas utiliser la connexion en 1 clic ci-dessus.
-                        </p>
-                    </div>
-                </details>
-
                 <div className="pt-2 flex justify-end">
                     <button
                         type="submit"
                         disabled={isLoading}
                         className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm"
                     >
-                        {isLoading ? "Sauvegarde..." : "Enregistrer les modifications"}
+                        {isLoading ? "Sauvegarde..." : "Enregistrer"}
                     </button>
                 </div>
             </form>
