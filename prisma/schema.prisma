@@ -18,6 +18,10 @@ model User {
   image         String?
 
   lorcanaApiKey String?
+  duelsUserId          String?
+  duelsUsername        String?
+  duelsAccessToken     String?   @db.Text
+  duelsTokenExpiresAt  DateTime?
   dreambornUrl  String?
 
   accounts     Account[]
