@@ -98,17 +98,31 @@ export interface CreateTournamentInput {
 
 // --- Interfaces pour les statistiques de tournoi ---
 
+export interface WentFirstStats {
+    totalGames: number;
+    firstPlayerWins: number;
+    firstPlayerWinrate: number;
+    secondPlayerWins: number;
+    secondPlayerWinrate: number;
+}
+
 export interface InkComboStat {
     name: string;
-    gamesPlayed: number;
-    matchesWon: number;
+    inks: string[];
     matchesPlayed: number;
+    matchesWon: number;
     matchWinrate: number;
+    gamesPlayed: number;
+    gamesWon: number;
+    gameWinrate: number;
 }
 
 export interface TournamentStatsResult {
     inkCombos: InkComboStat[];
+    wentFirst: WentFirstStats;
     wentFirstRate: number;
+    totalMatches: number;
+    totalGamesDecided: number;
 }
 
 // --- Interfaces Duels.ink Bot Organisateur ---
