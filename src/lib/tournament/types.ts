@@ -115,7 +115,7 @@ export interface TournamentStatsResult {
 
 export interface CreateTablePayload {
     asSpectator: boolean;
-    players: string[];
+    players: (string | { player: string; deck?: string | string[] })[];
     gameMode: string;
     matchFormat: string;
     visibility: string;

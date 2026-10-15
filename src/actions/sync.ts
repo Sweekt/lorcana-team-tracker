@@ -48,7 +48,7 @@ export async function syncTeamHistory(targetUserId?: string) {
 
             while (hasMore) {
                 const url = new URL("https://duels.ink/api/me/match-history");
-                url.searchParams.set("source", "matchmaking");
+                url.searchParams.set("source", "matchmaking,private");
                 url.searchParams.set("limit", "250");
                 if (cursor) url.searchParams.set("cursor", cursor);
 
@@ -80,14 +80,14 @@ export async function syncTeamHistory(targetUserId?: string) {
                 const data = await response.json();
                 const games = data.games || [];
 
-                const matchmakingGames = games.filter((g: any) => g.mode === "matchmaking");
+                const eligibleGames = games.filter((g: any) => g.mode === "matchmaking" || g.mode === "private");
 
-                if (matchmakingGames.length > 0) {
-                    const gamesToInsert = matchmakingGames.map((game: any) => ({
+                if (eligibleGames.length > 0) {
+                    const gamesToInsert = eligibleGames.map((game: any) => ({
                         id: game.game_id,
                         userId: user.id,
                         startedAt: new Date(game.started_at),
-                        queueId: game.season_name || game.queue_name,
+                        queueId: game.season_name || game.queue_name || null,
                         wentFirst: game.went_first,
                         result: game.result,
                         endReason: game.end_reason,
