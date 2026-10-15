@@ -33,3 +33,33 @@ export async function updateUserProfile(formData: FormData) {
         return { error: "Une erreur est survenue lors de la sauvegarde." };
     }
 }
+
+export async function disconnectDuelsAccount() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email && !session?.user?.id) {
+        return { error: "Vous devez être connecté pour faire cela." };
+    }
+
+    try {
+        await prisma.user.update({
+            where: {
+                ...(session.user.id ? { id: session.user.id } : { email: session.user.email! }),
+            },
+            data: {
+                duelsUserId: null,
+                duelsUsername: null,
+                duelsAccessToken: null,
+                duelsTokenExpiresAt: null,
+            },
+        });
+
+        revalidatePath("/settings");
+        revalidatePath("/team/settings");
+        revalidatePath("/");
+
+        return { success: true };
+    } catch (error) {
+        console.error("Erreur lors de la dissociation du compte Duels.ink:", error);
+        return { error: "Une erreur est survenue lors de la dissociation." };
+    }
+}

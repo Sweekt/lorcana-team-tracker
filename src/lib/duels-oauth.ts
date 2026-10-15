@@ -147,3 +147,50 @@ export function resolveEffectiveToken(user: UserTokenFields, now: Date = new Dat
         isOAuth: false,
     };
 }
+
+/**
+ * Associe atomiquement un compte Duels.ink à un utilisateur Prisma,
+ * en libérant tout autre utilisateur qui possédait déjà cet identifiant Duels (transfert).
+ */
+export async function linkDuelsAccountToUser(params: {
+    prismaClient: {
+        $transaction: (queries: any[]) => Promise<any>;
+        user: {
+            updateMany: (args: any) => Promise<any>;
+            update: (args: any) => Promise<any>;
+        };
+    };
+    currentUserId: string;
+    duelsUser: { id: string; name: string };
+    tokenData: { accessToken: string; expiresIn: number };
+    now?: Date;
+}) {
+    const now = params.now ?? new Date();
+    const expiresAt = new Date(now.getTime() + params.tokenData.expiresIn * 1000);
+
+    const [, updatedUser] = await params.prismaClient.$transaction([
+        params.prismaClient.user.updateMany({
+            where: {
+                duelsUserId: params.duelsUser.id,
+                NOT: { id: params.currentUserId },
+            },
+            data: {
+                duelsUserId: null,
+                duelsUsername: null,
+                duelsAccessToken: null,
+                duelsTokenExpiresAt: null,
+            },
+        }),
+        params.prismaClient.user.update({
+            where: { id: params.currentUserId },
+            data: {
+                duelsUserId: params.duelsUser.id,
+                duelsUsername: params.duelsUser.name,
+                duelsAccessToken: params.tokenData.accessToken,
+                duelsTokenExpiresAt: expiresAt,
+            },
+        }),
+    ]);
+
+    return updatedUser;
+}
