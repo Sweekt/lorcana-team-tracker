@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getCurrentTeamId } from "@/lib/current-team";
+import { resolveEffectiveToken, handleSync401 } from "@/lib/duels-oauth";
 
 export async function syncTeamHistory(targetUserId?: string) {
     try {
@@ -16,17 +17,30 @@ export async function syncTeamHistory(targetUserId?: string) {
             where: {
                 teams: { some: { teamId: teamId } },
                 ...(targetUserId ? { id: targetUserId } : {}),
-                lorcanaApiKey: { not: null }
-            }
+                OR: [
+                    { duelsAccessToken: { not: null } },
+                    { lorcanaApiKey: { not: null } },
+                ],
+            },
+            select: {
+                id: true,
+                name: true,
+                lorcanaApiKey: true,
+                duelsAccessToken: true,
+                duelsTokenExpiresAt: true,
+            },
         });
 
         if (usersToSync.length === 0) {
-            return { success: false, message: "Aucun joueur avec une clé API valide n'a été trouvé." };
+            return { success: false, message: "Aucun joueur avec une connexion Duels.ink ou une clé API n'a été trouvé." };
         }
 
         let totalInserted = 0;
 
         for (const user of usersToSync) {
+            let effective = resolveEffectiveToken(user);
+            if (!effective.token) continue;
+
             let hasMore = true;
             let cursor: string | null = null;
             let userInsertedCount = 0;
@@ -34,14 +48,29 @@ export async function syncTeamHistory(targetUserId?: string) {
 
             while (hasMore) {
                 const url = new URL("https://duels.ink/api/me/match-history");
-                if (cursor) url.searchParams.append("cursor", cursor);
+                url.searchParams.set("source", "matchmaking");
+                url.searchParams.set("limit", "250");
+                if (cursor) url.searchParams.set("cursor", cursor);
 
-                const response = await fetch(url.toString(), {
+                let response = await fetch(url.toString(), {
                     headers: {
-                        "Authorization": `Bearer ${user.lorcanaApiKey}`,
+                        "Authorization": `Bearer ${effective.token}`,
                         "Content-Type": "application/json"
                     }
                 });
+
+                if (response.status === 401 && effective.isOAuth) {
+                    await handleSync401(user.id, true, prisma);
+                    if (user.lorcanaApiKey && user.lorcanaApiKey.trim()) {
+                        effective = { token: user.lorcanaApiKey.trim(), isOAuth: false };
+                        response = await fetch(url.toString(), {
+                            headers: {
+                                "Authorization": `Bearer ${effective.token}`,
+                                "Content-Type": "application/json"
+                            }
+                        });
+                    }
+                }
 
                 if (!response.ok) {
                     console.error(`Erreur de synchro pour le joueur ${user.name}: ${response.status}`);

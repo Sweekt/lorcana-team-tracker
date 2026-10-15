@@ -194,3 +194,30 @@ export async function linkDuelsAccountToUser(params: {
 
     return updatedUser;
 }
+
+/**
+ * Gère une réponse HTTP 401 lors d'une synchronisation :
+ * si le token utilisé était OAuth, il est marqué expiré (new Date(0)).
+ */
+export async function handleSync401(
+    userId: string,
+    isOAuth: boolean,
+    prismaClient: {
+        user: {
+            update: (args: any) => Promise<any>;
+        };
+    }
+): Promise<void> {
+    if (!isOAuth) return;
+
+    try {
+        await prismaClient.user.update({
+            where: { id: userId },
+            data: {
+                duelsTokenExpiresAt: new Date(0),
+            },
+        });
+    } catch (err) {
+        console.error(`Failed to mark OAuth token expired for user ${userId}:`, err);
+    }
+}
