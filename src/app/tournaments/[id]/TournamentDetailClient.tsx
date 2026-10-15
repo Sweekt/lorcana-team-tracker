@@ -75,7 +75,6 @@ export default function TournamentDetailClient({
     const activeRound = tournament.rounds.find(
         (r) => r.roundNumber === tournament.currentRoundNumber
     );
-    const activeRoundMatchesCount = activeRound?.matches.length || 0;
     const activeRoundUnfinishedCount =
         activeRound?.matches.filter((m) => m.status !== "FINISHED").length || 0;
 
@@ -88,7 +87,6 @@ export default function TournamentDetailClient({
                     currentUserId={currentUserId}
                     isAdmin={isAdmin}
                     hasDuelsAccount={hasDuelsAccount}
-                    onViewDecklist={handleOpenDecklist}
                 />
 
                 {/* Barre de navigation par onglets (4 Vues Dynamiques) */}
@@ -202,11 +200,14 @@ export default function TournamentDetailClient({
             </div>
 
             {/* Modal d'édition de score pour le capitaine */}
-            <EditScoreModal
-                isOpen={Boolean(editScoreMatch)}
-                onClose={() => setEditScoreMatch(null)}
-                match={editScoreMatch}
-            />
+            {editScoreMatch && (
+                <EditScoreModal
+                    key={editScoreMatch.id}
+                    isOpen={true}
+                    onClose={() => setEditScoreMatch(null)}
+                    match={editScoreMatch}
+                />
+            )}
 
             {/* Modal d'inspection de decklist */}
             <DecklistModal

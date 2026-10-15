@@ -5,7 +5,7 @@ import { TournamentDetailRound } from "./types";
 
 interface HistoryViewProps {
     rounds: TournamentDetailRound[];
-    onViewDecklist?: (playerName: string, decklist: string | null, deckColors?: string[]) => void;
+    onViewDecklist?: (playerName: string, decklist: string | null, colors?: string[]) => void;
 }
 
 export default function HistoryView({ rounds, onViewDecklist }: HistoryViewProps) {
@@ -15,8 +15,8 @@ export default function HistoryView({ rounds, onViewDecklist }: HistoryViewProps
                 <svg className="w-12 h-12 mx-auto mb-3 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-sm font-semibold text-slate-400">Aucun historique de ronde pour l'instant.</p>
-                <p className="text-xs text-slate-500 mt-1">L'historique se remplira au fur et à mesure des matchs disputés.</p>
+                <p className="text-sm font-semibold text-slate-400">Aucun historique de ronde pour l’instant.</p>
+                <p className="text-xs text-slate-500 mt-1">L’historique se remplira au fur et à mesure des matchs disputés.</p>
             </div>
         );
     }

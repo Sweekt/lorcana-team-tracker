@@ -17,7 +17,7 @@ export default function StatsView({ stats }: StatsViewProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
                 <p className="text-sm font-semibold text-slate-400">Statistiques indisponibles pour le moment.</p>
-                <p className="text-xs text-slate-500 mt-1">Les statistiques d'archétypes et de premier tour apparaîtront dès les premiers matchs disputés.</p>
+                <p className="text-xs text-slate-500 mt-1">Les statistiques d’archétypes et de premier tour apparaîtront dès les premiers matchs disputés.</p>
             </div>
         );
     }
@@ -175,7 +175,7 @@ export default function StatsView({ stats }: StatsViewProps) {
 
                 {stats.inkCombos.length === 0 ? (
                     <div className="p-12 text-center text-slate-500 text-xs">
-                        Aucun archétype identifié pour l'instant.
+                        Aucun archétype identifié pour l’instant.
                     </div>
                 ) : (
                     <div className="overflow-x-auto">

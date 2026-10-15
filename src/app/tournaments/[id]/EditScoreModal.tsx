@@ -15,17 +15,20 @@ interface EditScoreModalProps {
 export default function EditScoreModal({ isOpen, onClose, match }: EditScoreModalProps) {
     const router = useRouter();
 
+    const [p1Score, setP1Score] = useState<number>(match?.player1Score ?? 0);
+    const [p2Score, setP2Score] = useState<number>(match?.player2Score ?? 0);
+    const [winnerId, setWinnerId] = useState<string>(
+        match?.winnerId ||
+        ((match?.player1Score ?? 0) > (match?.player2Score ?? 0)
+            ? match?.player1Id ?? ""
+            : match?.player2Id || match?.player1Id || "")
+    );
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     if (!isOpen || !match) return null;
 
     const p1Name = match.player1?.user?.name || "Joueur 1";
     const p2Name = match.player2?.user?.name || "Joueur 2";
-
-    const [p1Score, setP1Score] = useState<number>(match.player1Score ?? 0);
-    const [p2Score, setP2Score] = useState<number>(match.player2Score ?? 0);
-    const [winnerId, setWinnerId] = useState<string>(
-        match.winnerId || (match.player1Score > match.player2Score ? match.player1Id : match.player2Id || match.player1Id)
-    );
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleP1ScoreChange = (score: number) => {
         const val = Math.max(0, score);

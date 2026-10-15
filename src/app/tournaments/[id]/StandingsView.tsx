@@ -56,9 +56,9 @@ export default function StandingsView({
                                     <th className="py-3.5 px-3 text-center">Points</th>
                                     <th className="py-3.5 px-3 text-center">V - D - N</th>
                                     <th className="py-3.5 px-3 text-center">Manches</th>
-                                    <th className="py-3.5 px-3 text-center" title="Opponents' Match Win Percentage">OMWP %</th>
+                                    <th className="py-3.5 px-3 text-center" title="Opponents’ Match Win Percentage">OMWP %</th>
                                     <th className="py-3.5 px-3 text-center" title="Player Game Win Percentage">PGWP %</th>
-                                    <th className="py-3.5 px-3 text-center" title="Opponents' Game Win Percentage">OGWP %</th>
+                                    <th className="py-3.5 px-3 text-center" title="Opponents’ Game Win Percentage">OGWP %</th>
                                     <th className="py-3.5 px-4 text-right">Statut</th>
                                 </tr>
                             </thead>
@@ -102,6 +102,7 @@ export default function StandingsView({
                                             <td className="py-3.5 px-4">
                                                 <div className="flex items-center gap-3">
                                                     {participant?.user?.image ? (
+                                                        /* eslint-disable-next-line @next/next/no-img-element */
                                                         <img
                                                             src={participant.user.image}
                                                             alt={displayName}
@@ -199,7 +200,7 @@ export default function StandingsView({
                     • <strong className="text-slate-200">Points de match</strong> : 3 points par victoire, 1 point par match nul, 0 point par défaite.
                 </p>
                 <p className="leading-relaxed">
-                    • <strong className="text-slate-200">OMWP (Opponents' Match Win %)</strong> : Moyenne des pourcentages de victoire de tous les adversaires rencontrés (hors Bye, plancher officiel à 33%).
+                    • <strong className="text-slate-200">OMWP (Opponents’ Match Win %)</strong> : Moyenne des pourcentages de victoire de tous les adversaires rencontrés (hors Bye, plancher officiel à 33%).
                 </p>
                 <p className="leading-relaxed">
                     • <strong className="text-slate-200">PGWP / OGWP</strong> : Pourcentage individuel de manches gagnées, puis pourcentage de manches gagnées par les adversaires.

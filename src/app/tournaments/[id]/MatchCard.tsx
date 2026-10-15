@@ -31,7 +31,6 @@ export default function MatchCard({
 
     const isP1 = match.player1?.userId === currentUserId;
     const isP2 = match.player2?.userId === currentUserId;
-    const isPlayerInMatch = isP1 || isP2;
 
     const p1Name = match.player1?.user?.name || "Joueur 1";
     const p2Name = match.player2?.user?.name || (match.isBye ? "BYE" : "En attente");
@@ -87,7 +86,7 @@ export default function MatchCard({
             }
         } catch (error) {
             console.error("[MatchCard] Erreur abandon:", error);
-            toast.error("Erreur lors de l'enregistrement de l'abandon.");
+            toast.error("Erreur lors de l’enregistrement de l’abandon.");
         } finally {
             setIsDropping(false);
         }
@@ -152,6 +151,7 @@ export default function MatchCard({
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="relative shrink-0">
                             {match.player1?.user?.image ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
                                 <img
                                     src={match.player1.user.image}
                                     alt={p1Name}
@@ -244,6 +244,7 @@ export default function MatchCard({
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="relative shrink-0">
                                     {match.player2?.user?.image ? (
+                                        /* eslint-disable-next-line @next/next/no-img-element */
                                         <img
                                             src={match.player2.user.image}
                                             alt={p2Name}
@@ -411,12 +412,12 @@ export default function MatchCard({
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h4 className="text-lg font-bold text-slate-100 mb-2">
-                            Confirmer l'abandon ?
+                            Confirmer l’abandon ?
                         </h4>
                         <p className="text-xs text-slate-400 leading-relaxed mb-6">
                             Êtes-vous sûr de vouloir enregistrer le forfait de{" "}
                             <span className="text-slate-200 font-semibold">{confirmDropFor.name}</span> ?
-                            Cette action accordera une victoire 2-0 à l'adversaire et retirera le joueur des rondes suivantes.
+                            Cette action accordera une victoire 2-0 à l’adversaire et retirera le joueur des rondes suivantes.
                         </p>
 
                         <div className="flex items-center justify-end gap-3">
@@ -433,7 +434,7 @@ export default function MatchCard({
                                 disabled={isDropping}
                                 className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-colors disabled:opacity-50"
                             >
-                                {isDropping ? "En cours..." : "Confirmer l'abandon"}
+                                {isDropping ? "En cours..." : "Confirmer l’abandon"}
                             </button>
                         </div>
                     </div>

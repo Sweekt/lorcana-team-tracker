@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import {
     TournamentDetailData,
     TournamentDetailMatch,
-    TournamentDetailParticipant,
 } from "./types";
 
 interface RoundsViewProps {
@@ -47,7 +46,7 @@ export default function RoundsView({
         tournament.rounds[tournament.rounds.length - 1];
 
     const handleKick = async (participantId: string, name: string) => {
-        if (!confirm(`Confirmer l'expulsion de ${name} du tournoi ?`)) return;
+        if (!confirm(`Confirmer l’expulsion de ${name} du tournoi ?`)) return;
         setKickingId(participantId);
         try {
             const res = await kickParticipantAction(tournament.id, participantId);
@@ -59,7 +58,7 @@ export default function RoundsView({
             }
         } catch (error) {
             console.error("[RoundsView] Erreur kick:", error);
-            toast.error("Erreur lors de l'expulsion.");
+            toast.error("Erreur lors de l’expulsion.");
         } finally {
             setKickingId(null);
         }
@@ -98,7 +97,7 @@ export default function RoundsView({
                                 </svg>
                             </div>
                             <p className="text-sm font-semibold text-slate-300">Aucun joueur inscrit pour le moment</p>
-                            <p className="text-xs text-slate-500 mt-1">Les membres de l'équipe peuvent rejoindre le tournoi ci-dessus.</p>
+                            <p className="text-xs text-slate-500 mt-1">Les membres de l’équipe peuvent rejoindre le tournoi ci-dessus.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -119,6 +118,7 @@ export default function RoundsView({
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className="relative shrink-0">
                                                 {p.user?.image ? (
+                                                    /* eslint-disable-next-line @next/next/no-img-element */
                                                     <img
                                                         src={p.user.image}
                                                         alt={name}

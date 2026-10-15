@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import ColorDots from "@/components/ColorDots";
 import { getDeckDetails } from "@/actions/cards";
@@ -29,45 +29,44 @@ export default function DecklistModal({
     decklist,
     deckColors = [],
 }: DecklistModalProps) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [cards, setCards] = useState<EnrichedCard[]>([]);
-    const [rawText, setRawText] = useState<string>("");
-
-    useEffect(() => {
-        if (!isOpen || !decklist) {
-            setCards([]);
-            setRawText("");
-            return;
-        }
-
-        let parsedJson: { cardId: string; count: number }[] | null = null;
+    const parsedJson = useMemo(() => {
+        if (!decklist) return null;
         try {
             const parsed = JSON.parse(decklist);
             if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
-                parsedJson = parsed;
+                return parsed as { cardId: string; count: number }[];
             }
         } catch {
-            // Pas du JSON, affichage en texte brut
-            parsedJson = null;
+            return null;
         }
+        return null;
+    }, [decklist]);
 
-        if (parsedJson && parsedJson.length > 0) {
-            setIsLoading(true);
-            getDeckDetails(parsedJson)
-                .then((details) => {
-                    setCards(details);
-                })
-                .catch((err) => {
-                    console.error("[DecklistModal] Erreur chargement détails:", err);
-                    setRawText(decklist);
-                })
-                .finally(() => {
-                    setIsLoading(false);
-                });
-        } else {
-            setRawText(decklist);
-        }
-    }, [isOpen, decklist]);
+    const [isLoading, setIsLoading] = useState(() => Boolean(parsedJson && parsedJson.length > 0));
+    const [cards, setCards] = useState<EnrichedCard[]>([]);
+
+    const rawText = !parsedJson && decklist ? decklist : "";
+
+    useEffect(() => {
+        if (!parsedJson || parsedJson.length === 0) return;
+
+        let isCancelled = false;
+
+        getDeckDetails(parsedJson)
+            .then((details) => {
+                if (!isCancelled) setCards(details);
+            })
+            .catch((err) => {
+                console.error("[DecklistModal] Erreur chargement détails:", err);
+            })
+            .finally(() => {
+                if (!isCancelled) setIsLoading(false);
+            });
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [parsedJson]);
 
     if (!isOpen) return null;
 
@@ -157,6 +156,7 @@ export default function DecklistModal({
                                 >
                                     <div className="relative aspect-2.5/3.5 bg-slate-950 overflow-hidden">
                                         {card.imageUrl ? (
+                                            /* eslint-disable-next-line @next/next/no-img-element */
                                             <img
                                                 src={card.imageUrl}
                                                 alt={card.name}

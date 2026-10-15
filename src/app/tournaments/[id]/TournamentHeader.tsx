@@ -7,27 +7,33 @@ import { toast } from "sonner";
 import {
     joinTournamentAction,
     leaveTournamentAction,
-    kickParticipantAction,
     startTournamentAction,
     nextRoundAction,
     dropTournamentAction,
 } from "@/actions/tournament";
-import { TournamentDetailData, TournamentDetailParticipant } from "./types";
+import { TournamentDetailData } from "./types";
 
 interface TournamentHeaderProps {
     tournament: TournamentDetailData;
     currentUserId: string;
     isAdmin: boolean;
     hasDuelsAccount: boolean;
-    onViewDecklist?: (name: string, decklist: string | null, colors?: string[]) => void;
 }
+
+const AVAILABLE_INKS = [
+    { name: "Amber", label: "Ambre", bg: "bg-amber-400 text-slate-950 border-amber-300" },
+    { name: "Amethyst", label: "Améthyste", bg: "bg-purple-600 text-white border-purple-400" },
+    { name: "Emerald", label: "Émeraude", bg: "bg-emerald-500 text-white border-emerald-400" },
+    { name: "Ruby", label: "Rubis", bg: "bg-rose-600 text-white border-rose-400" },
+    { name: "Sapphire", label: "Saphir", bg: "bg-sky-500 text-white border-sky-400" },
+    { name: "Steel", label: "Acier", bg: "bg-slate-400 text-slate-950 border-slate-300" },
+];
 
 export default function TournamentHeader({
     tournament,
     currentUserId,
     isAdmin,
     hasDuelsAccount,
-    onViewDecklist,
 }: TournamentHeaderProps) {
     const router = useRouter();
 
@@ -35,20 +41,16 @@ export default function TournamentHeader({
     const [isLeaving, setIsLeaving] = useState(false);
     const [isStarting, setIsStarting] = useState(false);
     const [isNextRound, setIsNextRound] = useState(false);
-    const [isKickingId, setIsKickingId] = useState<string | null>(null);
     const [isDropping, setIsDropping] = useState(false);
 
-    // Modale d'inscription avec saisie de decklist si besoin
+    // Modale d'inscription avec saisie de decklist et d'encres
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [joinDecklist, setJoinDecklist] = useState("");
     const [joinDeckColors, setJoinDeckColors] = useState<string[]>([]);
 
-    // Modale confirmation désinscription
+    // Modales de confirmation
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-    // Modale confirmation abandon
     const [showDropConfirm, setShowDropConfirm] = useState(false);
-    // Modale de confirmation kick
-    const [kickConfirmParticipant, setKickConfirmParticipant] = useState<TournamentDetailParticipant | null>(null);
 
     const userParticipant = tournament.participants.find((p) => p.userId === currentUserId);
     const isRegistered = Boolean(userParticipant);
@@ -76,6 +78,18 @@ export default function TournamentHeader({
         }
     })();
 
+    const toggleInkColor = (inkName: string) => {
+        if (joinDeckColors.includes(inkName)) {
+            setJoinDeckColors(joinDeckColors.filter((c) => c !== inkName));
+        } else {
+            if (joinDeckColors.length >= 2) {
+                toast.warning("Un deck Lorcana est composé d’au maximum 2 encres.");
+                return;
+            }
+            setJoinDeckColors([...joinDeckColors, inkName]);
+        }
+    };
+
     // Inscription au tournoi
     const handleJoinTournament = async () => {
         if (!hasDuelsAccount) {
@@ -101,7 +115,7 @@ export default function TournamentHeader({
             }
         } catch (error) {
             console.error("[TournamentHeader] Erreur join:", error);
-            toast.error("Erreur lors de l'inscription.");
+            toast.error("Erreur lors de l’inscription.");
         } finally {
             setIsJoining(false);
         }
@@ -142,29 +156,9 @@ export default function TournamentHeader({
             }
         } catch (error) {
             console.error("[TournamentHeader] Erreur drop:", error);
-            toast.error("Erreur lors de l'abandon.");
+            toast.error("Erreur lors de l’abandon.");
         } finally {
             setIsDropping(false);
-        }
-    };
-
-    // Expulser un participant (capitaine)
-    const handleKickParticipant = async (participantId: string) => {
-        setIsKickingId(participantId);
-        try {
-            const res = await kickParticipantAction(tournament.id, participantId);
-            if (res.error) {
-                toast.error(res.error);
-            } else {
-                toast.success("Joueur retiré du tournoi.");
-                setKickConfirmParticipant(null);
-                router.refresh();
-            }
-        } catch (error) {
-            console.error("[TournamentHeader] Erreur kick:", error);
-            toast.error("Erreur lors de l'expulsion.");
-        } finally {
-            setIsKickingId(null);
         }
     };
 
@@ -287,7 +281,7 @@ export default function TournamentHeader({
                     </div>
                 </div>
 
-                {/* Actions principales (Rejoindre, Quitter, Lancer, Ronde suivante) */}
+                {/* Actions principales */}
                 <div className="flex flex-wrap items-center gap-3 shrink-0">
                     {/* Phase d'inscriptions */}
                     {isRegistration && (
@@ -298,15 +292,11 @@ export default function TournamentHeader({
                                     onClick={() => {
                                         if (!hasDuelsAccount) {
                                             toast.error(
-                                                "Veuillez d'abord connecter votre compte Duels.ink dans vos paramètres."
+                                                "Veuillez d’abord connecter votre compte Duels.ink dans vos paramètres."
                                             );
                                             return;
                                         }
-                                        if (!tournament.allowDeckChanges) {
-                                            setShowJoinModal(true);
-                                        } else {
-                                            handleJoinTournament();
-                                        }
+                                        setShowJoinModal(true);
                                     }}
                                     disabled={isJoining}
                                     className="px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 flex items-center gap-2"
@@ -434,7 +424,7 @@ export default function TournamentHeader({
                 </div>
             )}
 
-            {/* Modal d'inscription avec decklist */}
+            {/* Modal d'inscription avec decklist et encres */}
             {showJoinModal && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
@@ -448,13 +438,41 @@ export default function TournamentHeader({
                             Rejoindre {tournament.name}
                         </h3>
                         <p className="text-xs text-slate-400 leading-relaxed mb-6">
-                            Ce tournoi applique la règle des decks verrouillés. Veuillez renseigner votre decklist officielle avant le début du tournoi.
+                            Configurez votre deck officiel (encres et decklist) avant de valider votre inscription.
                         </p>
 
-                        <div className="space-y-4">
+                        <div className="space-y-5">
+                            {/* Choix des encres */}
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-300 mb-2">
+                                    Couleurs d’encre de votre deck (jusqu’à 2)
+                                </label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {AVAILABLE_INKS.map((ink) => {
+                                        const isSelected = joinDeckColors.includes(ink.name);
+                                        return (
+                                            <button
+                                                key={ink.name}
+                                                type="button"
+                                                onClick={() => toggleInkColor(ink.name)}
+                                                className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                                                    isSelected
+                                                        ? `${ink.bg} shadow-md ring-2 ring-white/20`
+                                                        : "bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200"
+                                                }`}
+                                            >
+                                                {isSelected && <span>✓</span>}
+                                                <span>{ink.label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Decklist */}
                             <div>
                                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                                    Decklist (Format texte ou JSON exporté de Duels.ink / Dreamborn)
+                                    Decklist {tournament.allowDeckChanges ? "(optionnelle)" : "(officielle requise)"}
                                 </label>
                                 <textarea
                                     rows={5}
@@ -554,7 +572,7 @@ export default function TournamentHeader({
                                 disabled={isDropping}
                                 className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-colors disabled:opacity-50"
                             >
-                                {isDropping ? "En cours..." : "Confirmer l'abandon"}
+                                {isDropping ? "En cours..." : "Confirmer l’abandon"}
                             </button>
                         </div>
                     </div>
