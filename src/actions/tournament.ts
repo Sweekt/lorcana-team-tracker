@@ -298,6 +298,10 @@ export async function dropTournamentAction(tournamentId: string, participantId: 
         });
         if (!tournament) return { error: "Tournoi introuvable." };
 
+        if (tournament.status === "FINISHED") {
+            return { error: "Impossible d'abandonner un tournoi déjà terminé." };
+        }
+
         const participant = await prisma.tournamentParticipant.findFirst({
             where: { id: participantId, tournamentId },
         });
@@ -854,6 +858,18 @@ export async function syncMatchFromDuelsAction(matchId: string) {
             },
         });
         if (!match) return { error: "Match introuvable." };
+
+        const isMember = await prisma.teamMember.findUnique({
+            where: {
+                userId_teamId: {
+                    userId: auth.userId,
+                    teamId: match.round.tournament.teamId,
+                },
+            },
+        });
+        if (!isMember) {
+            return { error: "Vous n'avez pas l'autorisation d'accéder à ce tournoi." };
+        }
 
         if (!match.duelsTableId) {
             return { error: "Aucune table Duels.ink associée à ce match." };

@@ -1,7 +1,6 @@
 import {
     InkComboStat,
     TournamentStatsResult,
-    WentFirstStats,
 } from "./types";
 
 export interface TournamentStatsMatch {
@@ -162,6 +161,10 @@ export function computeTournamentStats(
 
     for (const match of matches) {
         if (!match || typeof match !== "object") continue;
+
+        if (match.isBye || match.p2Id === null || match.player2Id === null) {
+            continue;
+        }
 
         const p1Score = Math.max(0, Number(match.p1Score ?? match.player1Score ?? 0));
         const p2Score = Math.max(0, Number(match.p2Score ?? match.player2Score ?? 0));

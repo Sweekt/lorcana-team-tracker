@@ -1,4 +1,4 @@
-import { StandingRow, MatchRecord } from "./types";
+import { StandingRow } from "./types";
 
 export interface StandingsParticipant {
     id: string;
@@ -113,23 +113,18 @@ export function computeStandings(
 
         let p1Won = false;
         let p2Won = false;
-        let isDraw = false;
 
         if (match.winnerId) {
             if (match.winnerId === p1Id) {
                 p1Won = true;
             } else if (match.winnerId === p2Id) {
                 p2Won = true;
-            } else {
-                isDraw = true;
             }
         } else {
             if (p1Score > p2Score) {
                 p1Won = true;
             } else if (p2Score > p1Score) {
                 p2Won = true;
-            } else {
-                isDraw = true;
             }
         }
 

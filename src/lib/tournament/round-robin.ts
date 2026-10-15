@@ -1,4 +1,4 @@
-import { GeneratedMatch, PairingPlayer } from "./types";
+import { GeneratedMatch } from "./types";
 
 export interface RoundRobinParticipant {
     id: string;

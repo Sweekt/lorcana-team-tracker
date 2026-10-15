@@ -274,3 +274,61 @@ test("computeTournamentStats supports player UUIDs and score fallbacks", () => {
     assert.strictEqual(stats.wentFirst.secondPlayerWins, 1);
     assert.strictEqual(stats.wentFirst.firstPlayerWinrate, 50);
 });
+
+test("computeTournamentStats skips Byes so they do not skew deck archetype winrates", () => {
+    const matches = [
+        // Real match: Ruby / Amethyst beats Amber / Steel 2-1
+        {
+            p1Id: "p1",
+            p2Id: "p2",
+            p1DeckColors: ["ruby", "amethyst"],
+            p2DeckColors: ["amber", "steel"],
+            p1Score: 2,
+            p2Score: 1,
+            winnerId: "p1",
+            wentFirstWinner: true,
+            status: "FINISHED",
+        },
+        // Bye with isBye: true
+        {
+            p1Id: "p1",
+            p2Id: null,
+            p1DeckColors: ["ruby", "amethyst"],
+            p1Score: 2,
+            p2Score: 0,
+            winnerId: "p1",
+            isBye: true,
+            status: "FINISHED",
+        },
+        // Bye with player2Id: null (Prisma schema convention)
+        {
+            player1Id: "p3",
+            player2Id: null,
+            player1DeckColors: ["sapphire", "steel"],
+            player1Score: 2,
+            player2Score: 0,
+            winnerId: "p3",
+            isBye: true,
+            status: "FINISHED",
+        },
+    ];
+
+    const stats = computeTournamentStats(matches);
+
+    // Only the real match should be processed
+    assert.strictEqual(stats.totalMatches, 1);
+    assert.strictEqual(stats.totalGamesDecided, 3);
+    assert.strictEqual(stats.inkCombos.length, 2);
+
+    const rubyAmethyst = stats.inkCombos.find((c) => c.name === "Ruby / Amethyst")!;
+    assert.ok(rubyAmethyst);
+    assert.strictEqual(rubyAmethyst.matchesPlayed, 1);
+    assert.strictEqual(rubyAmethyst.matchesWon, 1);
+    assert.strictEqual(rubyAmethyst.matchWinrate, 100);
+    assert.strictEqual(rubyAmethyst.gamesPlayed, 3);
+    assert.strictEqual(rubyAmethyst.gamesWon, 2);
+
+    // Sapphire / Steel was only in a Bye, so it should not appear in inkCombos
+    const saphSteel = stats.inkCombos.find((c) => c.name === "Sapphire / Steel");
+    assert.strictEqual(saphSteel, undefined);
+});
