@@ -30,6 +30,9 @@ model User {
   activeTeamId String?
   games        Game[]
   queueStats   UserQueueStat[]
+
+  tournamentsCreated       Tournament[]            @relation("CreatedTournaments")
+  tournamentParticipations TournamentParticipant[]
 }
 
 model Account {
@@ -71,6 +74,7 @@ model Team {
   createdAt    DateTime     @default(now())
   activeQueues String[]     @default([])
   members      TeamMember[]
+  tournaments  Tournament[]
 }
 
 // Table de liaison entre Utilisateur et Équipe avec un Rôle
@@ -142,4 +146,126 @@ model UserQueueStat {
 
   @@unique([userId, queueId])
   @@index([userId])
+}
+
+// ------------------------------------------------------
+// 4. MODULE TOURNOIS
+// ------------------------------------------------------
+
+enum TournamentFormat {
+  SWISS
+  SWISS_TOP_CUT
+  SINGLE_ELIMINATION
+  ROUND_ROBIN
+}
+
+enum TournamentStatus {
+  REGISTRATION
+  RUNNING
+  TOP_CUT
+  FINISHED
+}
+
+enum MatchStatus {
+  PENDING
+  IN_PROGRESS
+  FINISHED
+}
+
+enum MatchFormat {
+  BO1
+  BO3
+}
+
+model Tournament {
+  id                 String           @id @default(cuid())
+  teamId             String
+  name               String
+  format             TournamentFormat @default(SWISS)
+  status             TournamentStatus @default(REGISTRATION)
+  matchFormat        MatchFormat      @default(BO3)
+  set                String?
+  allowDeckChanges   Boolean          @default(false)
+  topCutSize         Int?
+  roundsCount        Int?
+  currentRoundNumber Int              @default(0)
+  createdAt          DateTime         @default(now())
+  createdById        String
+
+  team         Team                    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdBy    User                    @relation("CreatedTournaments", fields: [createdById], references: [id], onDelete: Cascade)
+  participants TournamentParticipant[]
+  rounds       TournamentRound[]
+
+  @@index([teamId])
+  @@index([createdById])
+}
+
+model TournamentParticipant {
+  id                 String   @id @default(cuid())
+  tournamentId       String
+  userId             String
+  officialDecklist   String?  @db.Text
+  officialDeckColors String[] @default([])
+  dropped            Boolean  @default(false)
+  droppedAtRound     Int?
+  seed               Int?
+  joinedAt           DateTime @default(now())
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  matchesAsPlayer1 TournamentMatch[] @relation("MatchPlayer1")
+  matchesAsPlayer2 TournamentMatch[] @relation("MatchPlayer2")
+  matchesWon       TournamentMatch[] @relation("MatchWinner")
+
+  @@unique([tournamentId, userId])
+  @@index([tournamentId])
+  @@index([userId])
+}
+
+model TournamentRound {
+  id           String      @id @default(cuid())
+  tournamentId String
+  roundNumber  Int
+  isTopCut     Boolean     @default(false)
+  status       MatchStatus @default(PENDING)
+  createdAt    DateTime    @default(now())
+
+  tournament Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matches    TournamentMatch[]
+
+  @@index([tournamentId])
+}
+
+model TournamentMatch {
+  id                String      @id @default(cuid())
+  roundId           String
+  tableNumber       Int
+  player1Id         String
+  player2Id         String?
+  duelsTableId      String?
+  duelsTableUrl     String?
+  player1Score      Int         @default(0)
+  player2Score      Int         @default(0)
+  isBye             Boolean     @default(false)
+  isForfeit         Boolean     @default(false)
+  winnerId          String?
+  status            MatchStatus @default(PENDING)
+  replayUrl         String?
+  player1Deck       String?     @db.Text
+  player2Deck       String?     @db.Text
+  player1DeckColors String[]    @default([])
+  player2DeckColors String[]    @default([])
+  wentFirstWinner   Boolean?
+
+  round   TournamentRound        @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  player1 TournamentParticipant  @relation("MatchPlayer1", fields: [player1Id], references: [id], onDelete: Cascade)
+  player2 TournamentParticipant? @relation("MatchPlayer2", fields: [player2Id], references: [id], onDelete: SetNull)
+  winner  TournamentParticipant? @relation("MatchWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+
+  @@index([roundId])
+  @@index([player1Id])
+  @@index([player2Id])
+  @@index([winnerId])
 }
