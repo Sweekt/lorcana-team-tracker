@@ -210,20 +210,23 @@ export default function TournamentDetailClient({
             )}
 
             {/* Modal d'inspection de decklist */}
-            <DecklistModal
-                isOpen={decklistModal.isOpen}
-                onClose={() =>
-                    setDecklistModal({
-                        isOpen: false,
-                        playerName: "",
-                        decklist: null,
-                        deckColors: [],
-                    })
-                }
-                playerName={decklistModal.playerName}
-                decklist={decklistModal.decklist}
-                deckColors={decklistModal.deckColors}
-            />
+            {decklistModal.isOpen && (
+                <DecklistModal
+                    key={`${decklistModal.playerName}-${decklistModal.decklist ?? ""}`}
+                    isOpen={true}
+                    onClose={() =>
+                        setDecklistModal({
+                            isOpen: false,
+                            playerName: "",
+                            decklist: null,
+                            deckColors: [],
+                        })
+                    }
+                    playerName={decklistModal.playerName}
+                    decklist={decklistModal.decklist}
+                    deckColors={decklistModal.deckColors}
+                />
+            )}
         </div>
     );
 }

@@ -44,6 +44,14 @@ export default function DecklistModal({
 
     const [isLoading, setIsLoading] = useState(() => Boolean(parsedJson && parsedJson.length > 0));
     const [cards, setCards] = useState<EnrichedCard[]>([]);
+    const [prevDecklist, setPrevDecklist] = useState<string | null>(decklist);
+
+    // Ajustement d'état en cours de rendu si le decklist change
+    if (decklist !== prevDecklist) {
+        setPrevDecklist(decklist);
+        setCards([]);
+        setIsLoading(Boolean(parsedJson && parsedJson.length > 0));
+    }
 
     const rawText = !parsedJson && decklist ? decklist : "";
 
@@ -58,6 +66,7 @@ export default function DecklistModal({
             })
             .catch((err) => {
                 console.error("[DecklistModal] Erreur chargement détails:", err);
+                if (!isCancelled) setCards([]);
             })
             .finally(() => {
                 if (!isCancelled) setIsLoading(false);
