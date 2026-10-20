@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { getCurrentTeamId } from "@/lib/current-team";
+import { canViewPlayerStats } from "@/lib/team-sharing";
 
 import HistoryTable from "@/components/HistoryTable";
 import MmrChart from "@/components/MmrChart";
@@ -41,6 +42,76 @@ export default async function PlayerProfilePage(props: Props) {
     });
 
     if (!targetUser) notFound();
+
+    const targetMembership = await prisma.teamMember.findUnique({
+        where: {
+            userId_teamId: {
+                userId: targetUser.id,
+                teamId: teamId
+            }
+        },
+        select: { shareData: true }
+    });
+
+    const canViewData = canViewPlayerStats({
+        sessionUserId: session.user.id,
+        targetUserId: targetUser.id,
+        shareData: targetMembership?.shareData
+    });
+    const displayName = targetUser.name ? targetUser.name.charAt(0).toUpperCase() + targetUser.name.slice(1) : "Joueur Inconnu";
+
+    if (!canViewData) {
+        return (
+            <div className="min-h-screen bg-slate-950 text-slate-100 pb-4">
+                <main className="max-w-4xl lg:max-w-7xl mx-auto p-8 space-y-8">
+                    <section className="bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-md">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-slate-800/80 pb-8">
+                            {targetUser.image ? (
+                                <img
+                                    src={targetUser.image}
+                                    alt={displayName}
+                                    className="w-24 h-24 rounded-2xl object-cover p-1 bg-linear-to-tr from-indigo-600 to-violet-500 shadow-lg shrink-0"
+                                />
+                            ) : (
+                                <div className="w-24 h-24 rounded-2xl bg-linear-to-tr from-indigo-600 to-violet-500 p-1 shadow-lg shrink-0">
+                                    <div className="w-full h-full bg-slate-950 rounded-[0.85rem] flex items-center justify-center text-4xl font-black text-indigo-400">
+                                        {displayName.charAt(0)}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="text-center sm:text-left space-y-3 my-auto w-full">
+                                <h1 className="text-3xl font-extrabold tracking-tight">{displayName}</h1>
+                                <p className="text-slate-400 text-sm mt-1">Membre de l'équipe</p>
+
+                                {targetUser.dreambornUrl && (
+                                    <a
+                                        href={targetUser.dreambornUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-indigo-500/20 hover:border-indigo-500/50 hover:text-indigo-300 transition-all text-sm font-medium text-slate-300"
+                                    >
+                                        <StarIcon className="w-4 h-4" />
+                                        <span>Voir les Decks sur Dreamborn</span>
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="mt-8 bg-slate-950/60 border border-dashed border-slate-800 rounded-xl p-8 sm:p-12 text-center space-y-3">
+                            <div className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700 text-slate-400 flex items-center justify-center mx-auto text-xl">
+                                🔒
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-200">Partage de données désactivé</h3>
+                            <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
+                                Ce joueur n'a pas activé le partage de ses parties, statistiques et graphiques avec l'équipe.
+                            </p>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        );
+    }
 
     const team = await prisma.team.findUnique({
         where: { id: teamId },
@@ -126,8 +197,6 @@ export default async function PlayerProfilePage(props: Props) {
             </div>
         );
     }
-
-    const displayName = targetUser.name ? targetUser.name.charAt(0).toUpperCase() + targetUser.name.slice(1) : "Joueur Inconnu";
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pb-4">

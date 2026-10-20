@@ -155,10 +155,17 @@ export default function TeamSettingsForm({ team, availableQueues, inviteLink }: 
                                 <div className="flex items-center gap-3">
                                     <img src={member.user.image || ""} alt="" className="w-8 h-8 rounded-full border border-slate-700" />
                                     <div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-2">
                                             <p className="text-slate-200 font-medium leading-none">{member.user.name}</p>
                                             <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${badgeColor}`}>
                                                 {badgeText}
+                                            </span>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${
+                                                member.shareData ?? true
+                                                    ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                                                    : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                            }`}>
+                                                {member.shareData ?? true ? "✓ Partage actif" : "✕ Partage désactivé"}
                                             </span>
                                         </div>
                                         <p className="text-xs text-slate-500 mt-1">{member.role === "ADMIN" ? "👑 Capitaine" : "Membre"}</p>

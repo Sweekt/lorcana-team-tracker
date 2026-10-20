@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/authOptions";
 import { getCurrentTeamId } from "@/lib/current-team";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
+import { getTeamShareWhereClause } from "@/lib/team-sharing";
 import LoginButton from "@/components/LoginButton";
 import Link from "next/link";
 import RosterIcon from "@/assets/ic_roster.svg"
@@ -59,9 +60,7 @@ export default async function HomePage() {
 
     const totalTeamGames = await prisma.game.count({
         where: {
-            user: {
-                teams: { some: { teamId: teamId } }
-            }
+            user: getTeamShareWhereClause(teamId)
         }
     });
 

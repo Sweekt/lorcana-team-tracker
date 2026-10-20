@@ -41,7 +41,12 @@ export default async function SettingsPage() {
         duelsConnected: Boolean(userFromDb.duelsAccessToken),
         duelsTokenExpiresAt: userFromDb.duelsTokenExpiresAt ? userFromDb.duelsTokenExpiresAt.toISOString() : null,
         isDuelsExpired: Boolean(userFromDb.duelsTokenExpiresAt && userFromDb.duelsTokenExpiresAt.getTime() <= Date.now()),
-        memberships: userFromDb.teams
+        memberships: userFromDb.teams.map((t) => ({
+            teamId: t.teamId,
+            role: t.role,
+            shareData: t.shareData,
+            team: t.team
+        }))
     };
 
     return (

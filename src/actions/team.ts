@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { validateTeamSharingPermission } from "@/lib/team-sharing";
 
 export async function createTeam(formData: FormData, userId: string) {
     const name = formData.get("name") as string;
@@ -252,5 +253,52 @@ export async function transferCaptaincy(targetUserId: string, teamId: string) {
     } catch (error) {
         console.error("Erreur lors du transfert :", error);
         return { error: "Une erreur est survenue lors du transfert de capitanat." };
+    }
+}
+
+export async function toggleTeamDataSharing(teamId: string, shareData: boolean) {
+    const session = await getServerSession(authOptions);
+    const authCheck = validateTeamSharingPermission(session?.user?.id, session?.user?.id);
+    if (!authCheck.allowed) {
+        return { error: authCheck.error };
+    }
+
+    try {
+        const membership = await prisma.teamMember.findUnique({
+            where: {
+                userId_teamId: {
+                    userId: session!.user!.id,
+                    teamId: teamId
+                }
+            }
+        });
+
+        const memberCheck = validateTeamSharingPermission(session!.user!.id, membership?.userId);
+        if (!memberCheck.allowed) {
+            return { error: memberCheck.error };
+        }
+
+        await prisma.teamMember.update({
+            where: {
+                userId_teamId: {
+                    userId: session!.user!.id,
+                    teamId: teamId
+                }
+            },
+            data: {
+                shareData: Boolean(shareData)
+            }
+        });
+
+        revalidatePath("/settings");
+        revalidatePath("/leaderboard");
+        revalidatePath("/");
+        revalidatePath("/player/[name]", "page");
+        revalidatePath("/team/settings");
+
+        return { success: true };
+    } catch (e) {
+        console.error("Erreur lors de la mise à jour du partage d'équipe :", e);
+        return { error: "Impossible de mettre à jour le paramètre de partage." };
     }
 }

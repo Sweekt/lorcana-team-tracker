@@ -1,7 +1,7 @@
 "use client";
 
 import { updateUserProfile, disconnectDuelsAccount } from "@/actions/user";
-import { leaveTeamAction } from "@/actions/team";
+import { leaveTeamAction, toggleTeamDataSharing } from "@/actions/team";
 import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,6 +10,7 @@ import CreateTeamForm from "@/components/CreateTeamForm";
 type TeamMembership = {
     teamId: string;
     role: "ADMIN" | "MEMBER";
+    shareData: boolean;
     team: {
         id: string;
         name: string;
@@ -35,6 +36,33 @@ export default function ProfileForm({ user }: { user: UserProps }) {
     const [isLoading, setIsLoading] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [sharingState, setSharingState] = useState<Record<string, boolean>>(() => {
+        const initial: Record<string, boolean> = {};
+        user.memberships.forEach(m => { initial[m.teamId] = m.shareData ?? true; });
+        return initial;
+    });
+
+    useEffect(() => {
+        const next: Record<string, boolean> = {};
+        user.memberships.forEach(m => { next[m.teamId] = m.shareData ?? true; });
+        setSharingState(next);
+    }, [user.memberships]);
+
+    const handleToggleShare = (teamId: string, currentVal: boolean) => {
+        const nextVal = !currentVal;
+        setSharingState(prev => ({ ...prev, [teamId]: nextVal }));
+
+        startTransition(async () => {
+            const result = await toggleTeamDataSharing(teamId, nextVal);
+            if (result?.error) {
+                toast.error(result.error);
+                setSharingState(prev => ({ ...prev, [teamId]: currentVal }));
+            } else {
+                toast.success(nextVal ? "Partage activé pour cette équipe." : "Partage désactivé pour cette équipe.");
+                router.refresh();
+            }
+        });
+    };
 
     useEffect(() => {
         if (searchParams.get("duels_linked") === "true") {
@@ -302,34 +330,63 @@ export default function ProfileForm({ user }: { user: UserProps }) {
                     <p className="text-slate-400 text-sm">Vous ne faites partie d'aucune équipe pour le moment.</p>
                 ) : (
                     <div className="space-y-3">
-                        {user.memberships.map((membership) => (
-                            <div
-                                key={membership.teamId}
-                                className="flex items-center justify-between p-4 bg-slate-950/50 border border-slate-800 rounded-lg hover:border-slate-700 transition-colors"
-                            >
-                                <div>
-                                    <h3 className="font-semibold text-slate-200">{membership.team.name}</h3>
-                                    <div className="flex items-center gap-3 mt-1 text-xs">
-                                        <span className={`px-2 py-0.5 rounded-full font-medium ${
-                                            membership.role === 'ADMIN' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-400'
-                                        }`}>
-                                            {membership.role === 'ADMIN' ? 'Capitaine' : 'Membre'}
-                                        </span>
-                                        <span className="text-slate-500">
-                                            {membership.team._count.members} membre{membership.team._count.members > 1 ? 's' : ''}
-                                        </span>
+                        {user.memberships.map((membership) => {
+                            const isSharing = sharingState[membership.teamId] ?? true;
+                            return (
+                                <div
+                                    key={membership.teamId}
+                                    className="p-4 bg-slate-950/50 border border-slate-800 rounded-lg hover:border-slate-700 transition-colors space-y-3"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-200">{membership.team.name}</h3>
+                                            <div className="flex items-center gap-3 mt-1 text-xs">
+                                                <span className={`px-2 py-0.5 rounded-full font-medium ${
+                                                    membership.role === 'ADMIN' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-400'
+                                                }`}>
+                                                    {membership.role === 'ADMIN' ? 'Capitaine' : 'Membre'}
+                                                </span>
+                                                <span className="text-slate-500">
+                                                    {membership.team._count.members} membre{membership.team._count.members > 1 ? 's' : ''}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => handleLeaveTeam(membership.teamId, membership.team.name)}
+                                            disabled={isPending}
+                                            className="px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-md transition-colors disabled:opacity-50"
+                                        >
+                                            Quitter
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
+                                        <div>
+                                            <p className="text-xs font-semibold text-slate-300">Partager mes parties avec cette équipe</p>
+                                            <p className="text-[11px] text-slate-500">Stats, ladder et historique visibles par vos coéquipiers.</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            role="switch"
+                                            aria-checked={isSharing}
+                                            aria-label={`Partager mes parties avec l'équipe ${membership.team.name}`}
+                                            disabled={isPending}
+                                            onClick={() => handleToggleShare(membership.teamId, isSharing)}
+                                            className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                isSharing ? "bg-indigo-600" : "bg-slate-700"
+                                            }`}
+                                        >
+                                            <span
+                                                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                                    isSharing ? "translate-x-5" : "translate-x-0"
+                                                }`}
+                                            />
+                                        </button>
                                     </div>
                                 </div>
-
-                                <button
-                                    onClick={() => handleLeaveTeam(membership.teamId, membership.team.name)}
-                                    disabled={isPending}
-                                    className="px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-md transition-colors disabled:opacity-50"
-                                >
-                                    Quitter
-                                </button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

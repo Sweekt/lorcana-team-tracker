@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
+import { getTeamShareWhereClause } from "@/lib/team-sharing";
 import Leaderboard from "@/components/Leaderboard";
 import HistoryTable from "@/components/HistoryTable";
 import QueueSelector from "@/components/QueueSelector";
@@ -25,9 +26,7 @@ async function getAvailableQueues(teamId: string) {
 
 async function getLeaderboard(queueId: string, teamId: string) {
   const users = await prisma.user.findMany({
-    where: {
-      teams: { some: { teamId } }
-    },
+    where: getTeamShareWhereClause(teamId),
     select: {
       name: true,
       image: true,
@@ -54,11 +53,7 @@ async function getRecentHistory(queueId: string, teamId: string) {
     where: {
       queueId: queueId,
       ...(isBo3 ? { mmrDelta: { not: null } } : {}),
-      user: {
-        teams: {
-          some: { teamId: teamId }
-        }
-      }
+      user: getTeamShareWhereClause(teamId)
     },
     orderBy: {startedAt: "desc"},
     take: 20,
@@ -106,7 +101,7 @@ export default async function LeaderboardPage(props: { searchParams: Promise<{ q
     const allStatsGames = await prisma.game.findMany({
       where: {
         queueId: currentQueue,
-        user: { teams: { some: { teamId: teamId } } }
+        user: getTeamShareWhereClause(teamId)
       },
       select: { result: true, wentFirst: true, myDeckColors: true, oppDeckColors: true, user: { select: { name: true } } }
     });
