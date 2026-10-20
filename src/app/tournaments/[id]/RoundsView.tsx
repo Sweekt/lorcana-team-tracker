@@ -149,7 +149,9 @@ export default function RoundsView({
                                                     ) : hasDeck ? (
                                                         <span className="text-[10px] text-emerald-400 font-medium">Deck enregistré</span>
                                                     ) : (
-                                                        <span className="text-[10px] text-slate-500">Pas de decklist</span>
+                                                        <span className="text-[10px] text-slate-500">
+                                                            {tournament.allowDeckChanges ? "Deck libre" : "Enregistré au 1er match"}
+                                                        </span>
                                                     )}
                                                 </div>
                                             </div>

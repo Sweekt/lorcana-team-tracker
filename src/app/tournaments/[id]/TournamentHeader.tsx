@@ -20,15 +20,6 @@ interface TournamentHeaderProps {
     hasDuelsAccount: boolean;
 }
 
-const AVAILABLE_INKS = [
-    { name: "Amber", label: "Ambre", bg: "bg-amber-400 text-slate-950 border-amber-300" },
-    { name: "Amethyst", label: "Améthyste", bg: "bg-purple-600 text-white border-purple-400" },
-    { name: "Emerald", label: "Émeraude", bg: "bg-emerald-500 text-white border-emerald-400" },
-    { name: "Ruby", label: "Rubis", bg: "bg-rose-600 text-white border-rose-400" },
-    { name: "Sapphire", label: "Saphir", bg: "bg-sky-500 text-white border-sky-400" },
-    { name: "Steel", label: "Acier", bg: "bg-slate-400 text-slate-950 border-slate-300" },
-];
-
 export default function TournamentHeader({
     tournament,
     currentUserId,
@@ -42,11 +33,6 @@ export default function TournamentHeader({
     const [isStarting, setIsStarting] = useState(false);
     const [isNextRound, setIsNextRound] = useState(false);
     const [isDropping, setIsDropping] = useState(false);
-
-    // Modale d'inscription avec saisie de decklist et d'encres
-    const [showJoinModal, setShowJoinModal] = useState(false);
-    const [joinDecklist, setJoinDecklist] = useState("");
-    const [joinDeckColors, setJoinDeckColors] = useState<string[]>([]);
 
     // Modales de confirmation
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -78,18 +64,6 @@ export default function TournamentHeader({
         }
     })();
 
-    const toggleInkColor = (inkName: string) => {
-        if (joinDeckColors.includes(inkName)) {
-            setJoinDeckColors(joinDeckColors.filter((c) => c !== inkName));
-        } else {
-            if (joinDeckColors.length >= 2) {
-                toast.warning("Un deck Lorcana est composé d’au maximum 2 encres.");
-                return;
-            }
-            setJoinDeckColors([...joinDeckColors, inkName]);
-        }
-    };
-
     // Inscription au tournoi
     const handleJoinTournament = async () => {
         if (!hasDuelsAccount) {
@@ -101,16 +75,12 @@ export default function TournamentHeader({
 
         setIsJoining(true);
         try {
-            const res = await joinTournamentAction(tournament.id, {
-                officialDecklist: joinDecklist.trim() || undefined,
-                officialDeckColors: joinDeckColors.length > 0 ? joinDeckColors : undefined,
-            });
+            const res = await joinTournamentAction(tournament.id);
 
             if (res.error) {
                 toast.error(res.error);
             } else {
                 toast.success("Vous êtes maintenant inscrit au tournoi !");
-                setShowJoinModal(false);
                 router.refresh();
             }
         } catch (error) {
@@ -289,15 +259,7 @@ export default function TournamentHeader({
                             {!isRegistered ? (
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        if (!hasDuelsAccount) {
-                                            toast.error(
-                                                "Veuillez d’abord connecter votre compte Duels.ink dans vos paramètres."
-                                            );
-                                            return;
-                                        }
-                                        setShowJoinModal(true);
-                                    }}
+                                    onClick={handleJoinTournament}
                                     disabled={isJoining}
                                     className="px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 flex items-center gap-2"
                                 >
@@ -420,87 +382,6 @@ export default function TournamentHeader({
                                 Paramètres de profil
                             </Link>.
                         </p>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal d'inscription avec decklist et encres */}
-            {showJoinModal && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
-                    onClick={() => setShowJoinModal(false)}
-                >
-                    <div
-                        className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h3 className="text-xl font-bold text-slate-100 mb-2">
-                            Rejoindre {tournament.name}
-                        </h3>
-                        <p className="text-xs text-slate-400 leading-relaxed mb-6">
-                            Configurez votre deck officiel (encres et decklist) avant de valider votre inscription.
-                        </p>
-
-                        <div className="space-y-5">
-                            {/* Choix des encres */}
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-2">
-                                    Couleurs d’encre de votre deck (jusqu’à 2)
-                                </label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {AVAILABLE_INKS.map((ink) => {
-                                        const isSelected = joinDeckColors.includes(ink.name);
-                                        return (
-                                            <button
-                                                key={ink.name}
-                                                type="button"
-                                                onClick={() => toggleInkColor(ink.name)}
-                                                className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
-                                                    isSelected
-                                                        ? `${ink.bg} shadow-md ring-2 ring-white/20`
-                                                        : "bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200"
-                                                }`}
-                                            >
-                                                {isSelected && <span>✓</span>}
-                                                <span>{ink.label}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Decklist */}
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                                    Decklist {tournament.allowDeckChanges ? "(optionnelle)" : "(officielle requise)"}
-                                </label>
-                                <textarea
-                                    rows={5}
-                                    value={joinDecklist}
-                                    onChange={(e) => setJoinDecklist(e.target.value)}
-                                    placeholder="Ex: 4 Cinderella - Gentle and Kind&#10;4 Robin Hood - Champion of Sherwood..."
-                                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowJoinModal(false)}
-                                    className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleJoinTournament}
-                                    disabled={isJoining}
-                                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50"
-                                >
-                                    {isJoining ? "Inscription..." : "Confirmer mon inscription"}
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             )}
