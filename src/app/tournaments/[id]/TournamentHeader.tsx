@@ -10,8 +10,10 @@ import {
     startTournamentAction,
     nextRoundAction,
     dropTournamentAction,
+    deleteTournamentAction,
 } from "@/actions/tournament";
 import { TournamentDetailData } from "./types";
+import EditTournamentModal from "./EditTournamentModal";
 
 interface TournamentHeaderProps {
     tournament: TournamentDetailData;
@@ -34,9 +36,12 @@ export default function TournamentHeader({
     const [isNextRound, setIsNextRound] = useState(false);
     const [isDropping, setIsDropping] = useState(false);
 
-    // Modales de confirmation
+    // Modales de confirmation et d'édition
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
     const [showDropConfirm, setShowDropConfirm] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const userParticipant = tournament.participants.find((p) => p.userId === currentUserId);
     const isRegistered = Boolean(userParticipant);
@@ -174,6 +179,27 @@ export default function TournamentHeader({
         }
     };
 
+    // Supprimer définitivement le tournoi
+    const handleDeleteTournament = async () => {
+        setIsDeleting(true);
+        try {
+            const res = await deleteTournamentAction(tournament.id);
+            if (res.error) {
+                toast.error(res.error);
+            } else {
+                toast.success("Tournoi supprimé avec succès.");
+                setShowDeleteConfirm(false);
+                router.push("/tournaments");
+                router.refresh();
+            }
+        } catch (error) {
+            console.error("[TournamentHeader] Erreur delete:", error);
+            toast.error("Erreur lors de la suppression du tournoi.");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const isRegistration = tournament.status === "REGISTRATION";
     const isRunning = tournament.status === "RUNNING";
     const isTopCut = tournament.status === "TOP_CUT";
@@ -288,6 +314,21 @@ export default function TournamentHeader({
                                 </button>
                             )}
 
+                            {/* Bouton Capitaine : Modifier le format / paramètres */}
+                            {isAdmin && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditModal(true)}
+                                    className="px-4 py-2.5 rounded-xl font-semibold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 transition-all flex items-center gap-2"
+                                    title="Modifier le format et les règles du tournoi"
+                                >
+                                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    <span>Modifier</span>
+                                </button>
+                            )}
+
                             {/* Bouton Capitaine : Lancer le tournoi */}
                             {isAdmin && (
                                 <button
@@ -364,6 +405,22 @@ export default function TournamentHeader({
                                 </button>
                             )}
                         </>
+                    )}
+
+                    {/* Capitaine : Supprimer le tournoi (accessible peu importe la phase) */}
+                    {isAdmin && (
+                        <button
+                            type="button"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            disabled={isDeleting}
+                            className="px-3.5 py-2.5 rounded-xl font-semibold text-sm bg-slate-800/80 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-700/80 hover:border-rose-500/30 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                            title="Supprimer définitivement ce tournoi"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span className="hidden sm:inline">Supprimer</span>
+                        </button>
                     )}
                 </div>
             </div>
@@ -454,6 +511,64 @@ export default function TournamentHeader({
                                 className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-colors disabled:opacity-50"
                             >
                                 {isDropping ? "En cours..." : "Confirmer l’abandon"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Modal d'édition des paramètres du tournoi (en phase d'inscription) */}
+            {isAdmin && isRegistration && (
+                <EditTournamentModal
+                    tournament={tournament}
+                    isOpen={showEditModal}
+                    onClose={() => setShowEditModal(false)}
+                />
+            )}
+
+            {/* Modal de suppression définitive du tournoi */}
+            {showDeleteConfirm && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+                    onClick={() => !isDeleting && setShowDeleteConfirm(false)}
+                >
+                    <div
+                        className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mb-4">
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <h4 className="text-lg font-bold text-slate-100 mb-2">
+                            Supprimer définitivement le tournoi ?
+                        </h4>
+                        <p className="text-xs text-slate-400 leading-relaxed mb-6">
+                            Êtes-vous certain de vouloir supprimer le tournoi <span className="font-semibold text-slate-200">« {tournament.name} »</span> ? Cette action est irréversible : toutes les inscriptions, rondes, matchs et statistiques associés seront définitivement effacés.
+                        </p>
+                        <div className="flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowDeleteConfirm(false)}
+                                disabled={isDeleting}
+                                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors disabled:opacity-50"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDeleteTournament}
+                                disabled={isDeleting}
+                                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <span>Suppression...</span>
+                                    </>
+                                ) : (
+                                    <span>Supprimer le tournoi</span>
+                                )}
                             </button>
                         </div>
                     </div>

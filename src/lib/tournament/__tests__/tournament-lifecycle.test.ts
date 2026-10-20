@@ -83,3 +83,12 @@ test("calculateDefaultSwissRounds returns correct round count for participants",
     assert.strictEqual(calculateDefaultSwissRounds(32), 5);
 });
 
+test("canEditTournamentFormat allows format changes strictly in REGISTRATION status", () => {
+    const { canEditTournamentFormat } = require("../tournament-lifecycle");
+    assert.strictEqual(canEditTournamentFormat("REGISTRATION"), true);
+    assert.strictEqual(canEditTournamentFormat("RUNNING"), false);
+    assert.strictEqual(canEditTournamentFormat("TOP_CUT"), false);
+    assert.strictEqual(canEditTournamentFormat("FINISHED"), false);
+    assert.strictEqual(canEditTournamentFormat(""), false);
+});
+

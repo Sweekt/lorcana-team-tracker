@@ -109,3 +109,11 @@ export function calculateDefaultSwissRounds(activeParticipantsCount: number): nu
     if (activeParticipantsCount <= 128) return 7;
     return Math.ceil(Math.log2(activeParticipantsCount));
 }
+
+/**
+ * Détermine si le format ou les paramètres d'un tournoi peuvent être modifiés.
+ * Seule la phase d'inscriptions (REGISTRATION) autorise la modification de format.
+ */
+export function canEditTournamentFormat(status: string): boolean {
+    return status === "REGISTRATION";
+}

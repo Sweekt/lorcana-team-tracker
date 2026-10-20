@@ -96,6 +96,16 @@ export interface CreateTournamentInput {
     roundsCount?: number | null;
 }
 
+export interface UpdateTournamentInput {
+    name?: string;
+    format?: TournamentFormat;
+    matchFormat?: MatchFormat;
+    set?: string | null;
+    allowDeckChanges?: boolean;
+    topCutSize?: number | null;
+    roundsCount?: number | null;
+}
+
 // --- Interfaces pour les statistiques de tournoi ---
 
 export interface WentFirstStats {

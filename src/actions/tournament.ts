@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentTeamId } from "@/lib/current-team";
 import {
     CreateTournamentInput,
+    UpdateTournamentInput,
     GeneratedMatch,
     MatchFormat,
     MatchStatus,
@@ -19,6 +20,7 @@ import { computeStandings } from "@/lib/tournament/standings";
 import {
     resolveDropForfeits,
     calculateDefaultSwissRounds,
+    canEditTournamentFormat,
 } from "@/lib/tournament/tournament-lifecycle";
 import {
     createDuelsTableForMatch,
@@ -103,6 +105,105 @@ export async function createTournamentAction(data: CreateTournamentInput & { tea
     } catch (error) {
         console.error("[createTournamentAction] Erreur inattendue:", error);
         return { error: "Une erreur est survenue lors de la création du tournoi." };
+    }
+}
+
+/**
+ * Modifie les paramètres et le format d'un tournoi pendant la phase d'inscriptions.
+ * Réservé aux administrateurs/capitaines (ADMIN).
+ */
+export async function updateTournamentAction(
+    tournamentId: string,
+    data: UpdateTournamentInput
+) {
+    try {
+        const auth = await getAuthenticatedUser();
+        if ("error" in auth) return { error: auth.error };
+
+        const tournament = await prisma.tournament.findUnique({
+            where: { id: tournamentId },
+        });
+        if (!tournament) return { error: "Tournoi introuvable." };
+
+        const isAdmin = await checkTeamAdmin(tournament.teamId, auth.userId);
+        if (!isAdmin) {
+            return { error: "Action réservée aux capitaines et administrateurs de l'équipe." };
+        }
+
+        if (!canEditTournamentFormat(tournament.status)) {
+            return {
+                error: "Le format et les paramètres du tournoi ne peuvent être modifiés que pendant la phase d'inscriptions.",
+            };
+        }
+
+        const name = data.name !== undefined ? data.name.trim() : tournament.name;
+        if (!name) {
+            return { error: "Le nom du tournoi ne peut pas être vide." };
+        }
+
+        const format = data.format ?? tournament.format;
+        const matchFormat = data.matchFormat ?? tournament.matchFormat;
+        const topCutSize = format === "SWISS_TOP_CUT"
+            ? (data.topCutSize ? Number(data.topCutSize) : (tournament.topCutSize || 4))
+            : null;
+        const roundsCount = data.roundsCount !== undefined
+            ? (data.roundsCount ? Number(data.roundsCount) : null)
+            : tournament.roundsCount;
+
+        const updated = await prisma.tournament.update({
+            where: { id: tournamentId },
+            data: {
+                name,
+                format,
+                matchFormat,
+                set: data.set !== undefined ? (data.set?.trim() || null) : tournament.set,
+                allowDeckChanges: data.allowDeckChanges !== undefined ? Boolean(data.allowDeckChanges) : tournament.allowDeckChanges,
+                topCutSize,
+                roundsCount,
+            },
+        });
+
+        revalidatePath("/tournaments");
+        revalidatePath(`/tournaments/${tournamentId}`);
+
+        return { success: true, tournament: updated };
+    } catch (error) {
+        console.error("[updateTournamentAction] Erreur inattendue:", error);
+        return { error: "Une erreur est survenue lors de la mise à jour du tournoi." };
+    }
+}
+
+/**
+ * Supprime définitivement un tournoi et toutes ses données associées (participants, rondes, matchs).
+ * Accessible peu importe la phase du tournoi (inscriptions, en cours, terminé).
+ * Réservé aux administrateurs/capitaines (ADMIN).
+ */
+export async function deleteTournamentAction(tournamentId: string) {
+    try {
+        const auth = await getAuthenticatedUser();
+        if ("error" in auth) return { error: auth.error };
+
+        const tournament = await prisma.tournament.findUnique({
+            where: { id: tournamentId },
+        });
+        if (!tournament) return { error: "Tournoi introuvable." };
+
+        const isAdmin = await checkTeamAdmin(tournament.teamId, auth.userId);
+        if (!isAdmin) {
+            return { error: "Action réservée aux capitaines et administrateurs de l'équipe." };
+        }
+
+        await prisma.tournament.delete({
+            where: { id: tournamentId },
+        });
+
+        revalidatePath("/tournaments");
+        revalidatePath(`/tournaments/${tournamentId}`);
+
+        return { success: true };
+    } catch (error) {
+        console.error("[deleteTournamentAction] Erreur inattendue:", error);
+        return { error: "Une erreur est survenue lors de la suppression du tournoi." };
     }
 }
 
